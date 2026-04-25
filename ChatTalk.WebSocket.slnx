@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/ChatTalk.WebClient/">
+    <File Path="app.js" />
+    <File Path="index.html" />
+    <File Path="style.css" />
+  </Folder>
+  <Project Path="ChatTalk.WebServer/ChatTalk.WebServer.csproj" />
+</Solution>
