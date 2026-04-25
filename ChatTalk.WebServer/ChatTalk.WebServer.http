@@ -1,0 +1,6 @@
+@ChatTalk.WebServer_HostAddress = http://localhost:5174
+
+GET {{ChatTalk.WebServer_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
