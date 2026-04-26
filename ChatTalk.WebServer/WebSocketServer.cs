@@ -1,6 +1,8 @@
 ﻿using System.Net.WebSockets;
 using System;
 using System.Text;
+using ChatTalk.Common.Protocol.Messages;
+using ChatTalk.Common.Protocol.Parsing;
 
 namespace ChatTalk.WebServer;
 
@@ -29,6 +31,23 @@ public class WebSocketServer
 				{
 					var message = Encoding.UTF8.GetString(buffer, 0, receive.Count);
 					Console.WriteLine($"[Message] : {message}");
+
+                    ProtocolMessage prot = MessageParser.Parse(message);
+                    switch (prot)
+					{
+						case ChatProtocolMessage chat:
+                            Console.WriteLine($"[CHAT Message] : {chat.Content}");
+                            break;
+                        case WhisperProtocolMessage whisper:
+                            Console.WriteLine($"[WHISPER Message] : {whisper.FromUserName} {whisper.ToUserName} {whisper.Content}");
+                            break;
+                        case UsrListProtocolMessage userlist:
+                            Console.WriteLine($"[USERLIST Message] : {string.Join(", ", userlist.UserListContent)}");
+							break;
+                        case IUserStatusProtocolMessage userStatus:
+                            Console.WriteLine($"[USERSTATUS Message] : {userStatus.UserName} {userStatus.StatusText}");
+                            break;
+                    }
 					await webSocket.SendAsync(new ArraySegment<byte>(buffer, 0, receive.Count), receive.MessageType, receive.EndOfMessage, CancellationToken.None);
 				}
 			}
