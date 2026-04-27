@@ -6,10 +6,16 @@ namespace ChatTalk.Common.Protocol.Serialization
 {
     public static class MessageConverter
     {
+        private static readonly JsonSerializerOptions Options = new()
+        {
+            PropertyNameCaseInsensitive = true
+        };
+
         public static BaseMessage? Create(string json)
         {
-            var baseMsg = JsonSerializer.Deserialize<BaseMessage>(json);
-            if(baseMsg == null ) return null;
+
+        var baseMsg = JsonSerializer.Deserialize<BaseMessage>(json, Options);
+            if(baseMsg == null) return null;
 
             return baseMsg.Type switch
             {
