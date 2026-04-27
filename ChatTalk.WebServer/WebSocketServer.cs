@@ -1,8 +1,7 @@
-﻿using System.Net.WebSockets;
-using System;
+﻿using ChatTalk.Common.Protocol.Messages;
+using ChatTalk.Common.Protocol.Serialization;
+using System.Net.WebSockets;
 using System.Text;
-using ChatTalk.Common.Protocol.Messages;
-using ChatTalk.Common.Protocol.Parsing;
 
 namespace ChatTalk.WebServer;
 
@@ -29,26 +28,15 @@ public class WebSocketServer
 
 				if (receive.MessageType == WebSocketMessageType.Text)
 				{
-					var message = Encoding.UTF8.GetString(buffer, 0, receive.Count);
-					Console.WriteLine($"[Message] : {message}");
+					string json = Encoding.UTF8.GetString(buffer, 0, receive.Count);
+					BaseMessage? message = MessageConverter.Create(json);
+					Console.WriteLine($"[Message] : {json}");
 
-                    ProtocolMessage prot = MessageParser.Parse(message);
-                    switch (prot)
-					{
-						case ChatProtocolMessage chat:
-                            Console.WriteLine($"[CHAT Message] : {chat.Content}");
-                            break;
-                        case WhisperProtocolMessage whisper:
-                            Console.WriteLine($"[WHISPER Message] : {whisper.FromUserName} {whisper.ToUserName} {whisper.Content}");
-                            break;
-                        case UsrListProtocolMessage userlist:
-                            Console.WriteLine($"[USERLIST Message] : {string.Join(", ", userlist.UserListContent)}");
-							break;
-                        case IUserStatusProtocolMessage userStatus:
-                            Console.WriteLine($"[USERSTATUS Message] : {userStatus.UserName} {userStatus.StatusText}");
-                            break;
-                    }
-					await webSocket.SendAsync(new ArraySegment<byte>(buffer, 0, receive.Count), receive.MessageType, receive.EndOfMessage, CancellationToken.None);
+					if (message == null) continue;
+
+					string sendJson  = MessageSerializer.Serialize(message);
+					byte[] sendBytes = Encoding.UTF8.GetBytes(sendJson);
+					await webSocket.SendAsync(new ArraySegment<byte>(sendBytes), receive.MessageType, true, CancellationToken.None);
 				}
 			}
 		}
