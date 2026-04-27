@@ -6,9 +6,14 @@ namespace ChatTalk.Common.Protocol.Serialization
 {
     public static class MessageSerializer
     {
+        public static readonly JsonSerializerOptions Option = new()
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        };
+
         public static string Serialize(BaseMessage baseMessage)
         {
-            return JsonSerializer.Serialize(baseMessage, baseMessage.GetType());
+            return JsonSerializer.Serialize(baseMessage, baseMessage.GetType(), Option);
         }
     }
 }
