@@ -11,9 +11,9 @@ namespace ChatTalk.Common.Protocol.Serialization
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         };
 
-        public static string Serialize(BaseMessage baseMessage)
+        public static string Serialize(BaseMessage message)
         {
-            return JsonSerializer.Serialize(baseMessage, baseMessage.GetType(), Option);
+            return JsonSerializer.Serialize((object)message, Option);
         }
     }
 }

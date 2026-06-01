@@ -35,6 +35,8 @@ public class WebSocketServer
 					if (message == null) continue;
 
 					string sendJson  = MessageSerializer.Serialize(message);
+                    Console.WriteLine(message.GetType().Name);
+                    Console.WriteLine($"[Send] : {sendJson}");
                     byte[] sendBytes = Encoding.UTF8.GetBytes(sendJson);
                     await webSocket.SendAsync(new ArraySegment<byte>(sendBytes), WebSocketMessageType.Text, true, CancellationToken.None);
 				}
