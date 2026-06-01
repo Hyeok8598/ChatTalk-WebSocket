@@ -1,4 +1,5 @@
 using ChatTalk.WebServer;
+using ChatTalk.WebServer.Network;
 using Microsoft.AspNetCore.Http;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,7 +18,7 @@ app.Map("/ws", async (HttpContext context) =>
     }
 
     var webSocket = await context.WebSockets.AcceptWebSocketAsync();
-    await webSocketServer.HandleAsync(webSocket);
+    await webSocketServer.AcceptAsync(webSocket);
 });
 
 app.Run();
