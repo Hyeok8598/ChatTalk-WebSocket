@@ -15,8 +15,7 @@ loginForm.addEventListener("submit", (e) => {
         return;
     }
 
-    // socket = new WebSocket("ws://localhost:5174/ws");
-
+    
     // socket.onopen = () => {
     //     statusText.textContent = `상태: 접속됨 (${userName})`;
 

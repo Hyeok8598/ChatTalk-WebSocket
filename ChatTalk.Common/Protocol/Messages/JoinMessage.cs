@@ -9,7 +9,7 @@ namespace ChatTalk.Common.Protocol.Messages
 {
     public class JoinMessage : BaseMessage
     {
-        public string UserName { get; } = string.Empty;
+        public string UserName { get; set; } = string.Empty;
 
         public JoinMessage()
         {

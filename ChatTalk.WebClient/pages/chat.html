@@ -4,13 +4,26 @@
 <head>
     <meta charset="utf-8" />
     <title>ChatTalk-WebSocket</title>
-    <script src="../js/chat.js" defer></script>
+    <script type="module" src="../js/chat.js" defer></script>
+    <link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
     <h1>ChatTalk</h1>
 
+    <div id="chatContainer"></div>
+    
+    <div id="whisper-popup" class="modal-popup hidden">
+        <iframe src="../pages/popup/whisperPopup.html"></iframe>
+    </div>
+
     <section>
-        <label id="userNameText"></label>
+        <button id="menuToggleButton">+</button>
+        
+        <div id="menuPanel" class="hidden">
+            <button id="whisperButton">귓속말</button>
+        </div>
+
+        <label id="userNameText" style="display: none;"></label>
         <textarea id="messageTextArea"></textarea>
         <button id="sendButton">전송</button>
     </section>

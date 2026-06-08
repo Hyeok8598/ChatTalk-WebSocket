@@ -1,0 +1,48 @@
+<button id="commandPopupButton">기능</button>
+
+<div id="commandPopup" class="modal hidden">
+    <div class="modal-content">
+        <h3>귓속말 대상 선택</h3>
+
+        <input id="targetInput" type="text" placeholder="상대방 이름" />
+
+        <button id="applyButton">적용</button>
+        <button id="closeButton">닫기</button>
+    </div>
+</div>
+
+<script type="module">
+    import * as Const from "../../common/const.js";
+
+    const closeButton = document.getElementById("closeButton");
+    const applyButton = document.getElementById("applyButton");
+    const targetUserName = document.getElementById("targetInput");
+
+    closeButton.addEventListener("click", () => {
+        var json = {
+              type : "CLOSE"
+            , data : {
+                popupId : "whisper-popup"
+            }
+        };
+
+        parent.postMessage(json, "*");
+    });
+
+    applyButton.addEventListener("click", () => {
+        if(targetUserName === "") {
+            alert("대상 이름을 입력하세요.");
+            return;
+        }
+
+        var json = {
+              type : "APPLY"
+            , data : {
+                  popupId    : "whisper-popup"
+                , targetUser : targetUserName.value
+            }
+        };
+
+        parent.postMessage(json, "*");
+    });
+</script>
