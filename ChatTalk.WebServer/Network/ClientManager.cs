@@ -7,22 +7,17 @@ namespace ChatTalk.WebServer.Network
     {
         private readonly ConcurrentDictionary<string, WebSocketHandler> _clients = new();
 
-        public void Add(string userName, WebSocketHandler handler)
+        public void Add(string userId, WebSocketHandler handler)
         {
-            _clients.TryAdd(userName, handler);
+            _clients.TryAdd(userId, handler);
         }
 
-        public bool Remove(string userName)
+        public bool Remove(string userId)
         {
-            return _clients.TryRemove(userName, out _);
+            return _clients.TryRemove(userId, out _);
         }
 
-        public IReadOnlyCollection<string> GetAllClients()
-        {
-            return _clients.Keys.ToList();
-        }
-
-        public Array getAllHandlers()
+        public Array GetAllHandlers()
         {
             return _clients.Values.ToArray();
         }

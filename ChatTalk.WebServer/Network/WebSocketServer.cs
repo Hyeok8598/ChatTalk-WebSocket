@@ -31,20 +31,35 @@ public class WebSocketServer
 
 	public async Task BroadCastAsync(byte[] sendBytes)
 	{
-		Array handlers = clients.getAllHandlers();
+		Array handlers = clients.GetAllHandlers();
 		foreach (WebSocketHandler handler in handlers)
 		{
 			await handler.SendAsync(sendBytes);
         }
     }
 
-	public void AddClient(string userName, WebSocketHandler handler)
+	public void AddClient(string userId, WebSocketHandler handler)
 	{
-        clients.Add(userName, handler);
+        clients.Add(userId, handler);
     }
 
-	public void RemoveClient(string userName)
+	public void RemoveClient(string userId)
 	{
-		clients.Remove(userName);
+		clients.Remove(userId);
 	}
+
+	public string[] GetUserNames()
+	{
+		Array handlers = clients.GetAllHandlers();
+        string[] userNames = new string[handlers.Length];
+
+		int idx = 0;
+		foreach(WebSocketHandler handler in handlers)
+		{
+			string userName = handler.GetUserName();
+			userNames[idx++] = userName;
+        }
+
+		return userNames;
+    }
 }

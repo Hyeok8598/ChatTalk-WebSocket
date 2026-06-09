@@ -14,7 +14,7 @@ namespace ChatTalk.Common.Protocol.Serialization
         public static BaseMessage? Create(string json)
         {
             var baseMsg = JsonSerializer.Deserialize<BaseMessage>(json, Options);
-            if(baseMsg == null) return null;
+            if (baseMsg == null) return null;
 
             return baseMsg.Type switch
             {
