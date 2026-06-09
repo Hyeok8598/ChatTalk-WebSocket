@@ -9,6 +9,7 @@ const menuToggleButton = document.getElementById("menuToggleButton");
 const menuPanel = document.getElementById("menuPanel");
 const whisperButton = document.getElementById("whisperButton");
 const whisperPopup = document.getElementById("whisper-popup");
+const userListContainer = document.getElementById("userListContainer");
 
 const sendMessageIds = new Set();
 
@@ -18,6 +19,10 @@ window.onload = () => {
     userNameText.textContent = userName;
     connectSocket();
 };
+
+window.addEventListener("message", (event) => {
+    popupCallback(event.data);
+});
 
 menuToggleButton.addEventListener("click", () => {
     if(menuPanel.classList.contains("hidden")) {
@@ -39,10 +44,6 @@ sendButton.addEventListener("click", ()  => {
     addMessage(message, common.MessageDirection.SENT);
 });
 
-window.addEventListener("message", (event) => {
-    popupCallback(event.data);
-});
-
 function connectSocket() {
     socket = new WebSocket("ws://localhost:5174/ws");
 
@@ -62,10 +63,12 @@ function connectSocket() {
 
         console.log("서버 메시지:", receivedMessage);
 
-        if(common.receivedMessage.type === "MSG") {
+        if(receivedMessage.type === "MSG") {
             if(sendMessageIds.has(receivedMessage.messageId)) return;
 
             addMessage(receivedMessage.content, common.MessageDirection.RECEIVED);
+        } else if(receivedMessage.type === "USRLIST") {
+            refreshUserList(receivedMessage.users);
         }
     };
 
@@ -127,5 +130,16 @@ function popupCallback(json) {
     } else if(json.type === "APPLY") {
         messageTextArea.value = `/w ${json.data.targetUser}`;
         common.closeModalPopup(json.data.popupId);
+    }
+};
+
+function refreshUserList(userNames) {
+    userListContainer.replaceChildren();
+
+    for(const userName of userNames) {
+        const userNameDiv = document.createElement("div");
+        userNameDiv.textContent = userName;
+        userNameDiv.id = `user-${userName}`;
+        userListContainer.appendChild(userNameDiv);
     }
 };

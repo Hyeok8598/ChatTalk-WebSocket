@@ -9,7 +9,7 @@ namespace ChatTalk.Common.Network
 {
     public class ReceiveResult
     {
-        public WebSocketReceiveResult Result { get; set; }
-        public string Json { get; set; } = string.Empty;
+        public required WebSocketReceiveResult Result { get; init; }
+        public string Json { get; init; } = string.Empty;
     }
 }

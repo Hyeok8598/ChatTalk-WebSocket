@@ -10,6 +10,8 @@ namespace ChatTalk.WebServer.Network
     {
         private readonly WebSocketServer _server;
         private readonly WebSocket _webSocket;
+        private string userName = string.Empty;
+        private string userId = string.Empty;
 
         public WebSocketHandler(WebSocketServer server, WebSocket webSocket)
         {
@@ -23,8 +25,12 @@ namespace ChatTalk.WebServer.Network
 
             if (receive.Result.MessageType == WebSocketMessageType.Close)
             {
-                await CloseAsync(receive);
-                // await BroadcastAsync(receive);
+                //await CloseAsync(receive);
+                _server.RemoveClient(userId);
+                await BroadcastAsync(new UserListMessage
+                {
+                    Users = _server.GetUserNames()
+                });
             }
             else if (receive.Result.MessageType == WebSocketMessageType.Text)
             {
@@ -37,7 +43,28 @@ namespace ChatTalk.WebServer.Network
 
                 if (baseMessage is JoinMessage joinMessage)
                 {
-                    _server.AddClient(joinMessage.UserName, this);
+                    userId = Guid.NewGuid().ToString();
+                    userName = joinMessage.UserName;
+
+                    _server.AddClient(userId, this);
+
+                    await BroadcastAsync(new UserListMessage
+                    {
+                        Users = _server.GetUserNames()
+                    });
+
+                    return;
+                }
+
+                if (baseMessage is LeaveMessage leaveMessage)
+                {
+                    _server.RemoveClient(leaveMessage.UserName);
+                    await BroadcastAsync(new UserListMessage
+                    {
+                        Users = _server.GetUserNames()
+                    });
+
+                    return;
                 }
 
                 await BroadcastAsync(baseMessage);
@@ -58,12 +85,12 @@ namespace ChatTalk.WebServer.Network
             };
         }
 
-        public async Task CloseAsync(ReceiveResult receive)
-        {
-            /* WebSocketServer 책임이므로 추후 해당 코드는 변경되야함 */
-            Console.WriteLine($"[Close] : {receive.Result.CloseStatus} - {receive.Result.CloseStatusDescription}");
-            await _webSocket.CloseAsync(receive.Result.CloseStatus ?? WebSocketCloseStatus.NormalClosure, receive.Result.CloseStatusDescription, CancellationToken.None);
-        }
+        //public async Task CloseAsync(ReceiveResult receive)
+        //{
+        //    /* WebSocketServer 책임이므로 추후 해당 코드는 변경되야함 */
+        //    Console.WriteLine($"[Close] : {receive.Result.CloseStatus} - {receive.Result.CloseStatusDescription}");
+        //    //await _webSocket.CloseAsync(receive.Result.CloseStatus ?? WebSocketCloseStatus.NormalClosure, receive.Result.CloseStatusDescription, CancellationToken.None);
+        //}
 
         public async Task SendAsync(byte[] sendBytes)
         {
@@ -89,6 +116,11 @@ namespace ChatTalk.WebServer.Network
             }
 
             return message;
+        }
+
+        public string GetUserName()
+        {
+            return userName;
         }
     }
 }
