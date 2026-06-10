@@ -10,7 +10,7 @@ namespace ChatTalk.WebServer.Data
         public ChatTalkDbContext(DbContextOptions<ChatTalkDbContext> options) : base(options) {}
 
         public DbSet<ChatMessageEntity> ChatMessages => Set<ChatMessageEntity>();
-        public DbSet<UserEntity> Users => Set<UserEntity>();
+        public DbSet<UsersEntity> Users => Set<UsersEntity>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
