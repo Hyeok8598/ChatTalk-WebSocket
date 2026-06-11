@@ -1,4 +1,4 @@
-package com.chattalk.auth.dto;
+package com.chattalk.auth.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;

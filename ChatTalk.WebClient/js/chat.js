@@ -1,4 +1,4 @@
-import * as common from "../common/const.js";
+import * as common from "../common/common.js";
 
 const userNameText = document.getElementById("userNameText");
 const sendButton = document.getElementById("sendButton");
@@ -45,7 +45,7 @@ sendButton.addEventListener("click", ()  => {
 });
 
 function connectSocket() {
-    socket = new WebSocket("ws://localhost:5174/ws");
+    socket = new WebSocket(common.SERVER.CHAT_WS);
 
     socket.onopen = () => {
         statusText.textContent = `상태: 접속됨 (${userName})`;
