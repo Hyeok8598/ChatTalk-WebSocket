@@ -11,14 +11,19 @@ loginForm.addEventListener("submit", async (event) => {
     const userId = userIdInput.value;
     const password = passwordInput.value;
 
-    const data = await common.post("api/users/login", {
-          userId   : userId
-        , password : password
-    });
+    try {
+        const data = await common.post("api/users/login", {
+              userId   : userId
+            , password : password
+        });
+    
+        common.setUserInfo(data);
 
-    sessionStorage.setItem("userId", data.userId);
-    sessionStorage.setItem("userName", data.userName);
-
-    message.innerText = "로그인 성공";
-    location.href = "chat.html";
+        message.innerText = "로그인 성공";
+        location.href = "chat.html";
+    }
+    catch {
+        alert("사용자 정보가 일치하지 않습니다.");
+        message.innerText = "로그인 실패";
+    }
 });

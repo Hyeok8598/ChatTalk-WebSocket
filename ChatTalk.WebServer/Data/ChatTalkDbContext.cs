@@ -31,6 +31,19 @@ namespace ChatTalk.WebServer.Data
                 }
             }
 
+            modelBuilder.Entity<ChatMessageEntity>(entity =>
+            {
+                entity.Property(x => x.Id)
+                      .HasColumnName("id")
+                      .ValueGeneratedOnAdd();
+
+                entity.Property(x => x.CreateAt)
+                      .HasColumnName("create_at")
+                      .HasDefaultValueSql("NOW()")
+                      .ValueGeneratedOnAdd();
+            });
+
+
             base.OnModelCreating(modelBuilder);
         }
     }
