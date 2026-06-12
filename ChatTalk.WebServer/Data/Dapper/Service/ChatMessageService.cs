@@ -1,4 +1,5 @@
 ﻿
+using ChatTalk.WebServer.Data.Dapper.Dto;
 using ChatTalk.WebServer.Data.Dapper.Entities;
 using ChatTalk.WebServer.Data.Dapper.Repository;
 
@@ -13,9 +14,9 @@ namespace ChatTalk.WebServer.Data.EfCore.Service
             _chatMessageRepository = chatMessageRepository;
         }
 
-        public async Task Insert001(ChatMessageEntity entity)
+        public async Task Insert001(ChatMessageDto dto)
         {
-            await _chatMessageRepository.Insert001(entity);
+            await _chatMessageRepository.Insert001(dto);
         }
     }
 }

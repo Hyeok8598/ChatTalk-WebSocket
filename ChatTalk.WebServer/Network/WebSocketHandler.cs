@@ -87,14 +87,14 @@ namespace ChatTalk.WebServer.Network
 
                     if (baseMessage is ChatMessage chatMessage)
                     {
-                        ChatMessageEntity entity = new ChatMessageEntity
+                        ChatMessageDto chatMessageDto = new ChatMessageDto
                         {
                             SenderName = chatMessage.Sender,
                             MessageId = chatMessage.MessageId,
                             Content = chatMessage.Content
                         };
 
-                        await _chatMessageService.Insert001(entity);
+                        await _chatMessageService.Insert001(chatMessageDto);
                     }
                     await BroadcastAsync(baseMessage);
                 }
