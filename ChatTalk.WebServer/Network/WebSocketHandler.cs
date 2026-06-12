@@ -1,8 +1,10 @@
 ﻿using ChatTalk.Common.Network;
 using ChatTalk.Common.Protocol.Messages;
 using ChatTalk.Common.Protocol.Serialization;
-using ChatTalk.WebServer.Data.Entities;
-using ChatTalk.WebServer.Data.Service;
+using ChatTalk.WebServer.Data.Dapper.Dto;
+using ChatTalk.WebServer.Data.Dapper.Entities;
+using ChatTalk.WebServer.Data.Dapper.Service;
+using ChatTalk.WebServer.Data.EfCore.Service;
 using System.Net.WebSockets;
 using System.Text;
 
@@ -29,71 +31,77 @@ namespace ChatTalk.WebServer.Network
         public async Task RunAsync()
         {
             var receive = await ReceiveAsync();
-
-            if (receive.Result.MessageType == WebSocketMessageType.Close)
+            try
             {
-                //await CloseAsync(receive);
-                _server.RemoveClient(userId);
-                await BroadcastAsync(new UserListMessage
+                if (receive.Result.MessageType == WebSocketMessageType.Close)
                 {
-                    Users = _server.GetUserNames()
-                });
-            }
-            else if (receive.Result.MessageType == WebSocketMessageType.Text)
-            {
-                BaseMessage? baseMessage = CreateMessage(receive);
-
-                if (baseMessage == null)
-                {
-                    return;
+                    //await CloseAsync(receive);
+                    _server.RemoveClient(userId);
+                    await BroadcastAsync(new UserListMessage
+                    {
+                        Users = _server.GetUserNames()
+                    });
                 }
-
-                if (baseMessage is JoinMessage joinMessage)
+                else if (receive.Result.MessageType == WebSocketMessageType.Text)
                 {
-                    UsersEntity? user = await _usersService.FindJoinUserAsync(joinMessage.UserName);
-
-                    if (user == null)
+                    BaseMessage? baseMessage = CreateMessage(receive);
+                    if (baseMessage == null)
                     {
                         return;
                     }
 
-                    userId = user.UserId;
-                    userName = user.UserName;
-
-                    _server.AddClient(userId, this);
-
-                    await BroadcastAsync(new UserListMessage
+                    if (baseMessage is JoinMessage joinMessage)
                     {
-                        Users = _server.GetUserNames()
-                    });
+                        UsersDto usersDto = new UsersDto { UserId = joinMessage.UserId };
+                        UsersEntity? user = await _usersService.SelectOne001(usersDto);
 
-                    return;
-                }
+                        if (user == null)
+                        {
+                            Console.WriteLine("유저아이디가 없음");
+                            return;
+                        }
 
-                if (baseMessage is LeaveMessage leaveMessage)
-                {
-                    _server.RemoveClient(leaveMessage.UserName);
-                    await BroadcastAsync(new UserListMessage
+                        userId = user.UserId;
+                        userName = user.UserName;
+
+                        _server.AddClient(userId, this);
+
+                        await BroadcastAsync(new UserListMessage
+                        {
+                            Users = _server.GetUserNames()
+                        });
+
+                        return;
+                    }
+
+                    if (baseMessage is LeaveMessage leaveMessage)
                     {
-                        Users = _server.GetUserNames()
-                    });
+                        _server.RemoveClient(leaveMessage.UserName);
+                        await BroadcastAsync(new UserListMessage
+                        {
+                            Users = _server.GetUserNames()
+                        });
 
-                    return;
-                }
+                        return;
+                    }
 
-                if(baseMessage is ChatMessage chatMessage)
-                {
-                    ChatMessageEntity entity = new ChatMessageEntity
+                    if (baseMessage is ChatMessage chatMessage)
                     {
-                        SenderName = chatMessage.Sender,
-                        MessageId = chatMessage.MessageId,
-                        Content = chatMessage.Content
-                    };
+                        ChatMessageDto chatMessageDto = new ChatMessageDto
+                        {
+                            SenderName = chatMessage.Sender,
+                            MessageId = chatMessage.MessageId,
+                            Content = chatMessage.Content
+                        };
 
-                    await _chatMessageService.SaveMessageAsync(entity);
+                        await _chatMessageService.Insert001(chatMessageDto);
+                    }
+                    await BroadcastAsync(baseMessage);
                 }
-
-                await BroadcastAsync(baseMessage);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"메시지 핸들 중 오류 {ex.Message}");
             }
         }
 

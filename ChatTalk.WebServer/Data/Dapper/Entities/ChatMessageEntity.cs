@@ -1,4 +1,4 @@
-﻿namespace ChatTalk.WebServer.Data.Entities
+﻿namespace ChatTalk.WebServer.Data.Dapper.Entities
 {
     public class ChatMessageEntity
     {
