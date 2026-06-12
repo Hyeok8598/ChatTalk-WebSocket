@@ -1,6 +1,8 @@
 ﻿using ChatTalk.Common.Network;
 using ChatTalk.Common.Protocol.Messages;
 using ChatTalk.Common.Protocol.Serialization;
+using ChatTalk.WebServer.Data.Entities;
+using ChatTalk.WebServer.Data.Service;
 using System.Net.WebSockets;
 using System.Text;
 
@@ -10,13 +12,18 @@ namespace ChatTalk.WebServer.Network
     {
         private readonly WebSocketServer _server;
         private readonly WebSocket _webSocket;
+        private readonly UsersService _usersService;
+        private readonly ChatMessageService _chatMessageService;
+
         private string userName = string.Empty;
         private string userId = string.Empty;
 
-        public WebSocketHandler(WebSocketServer server, WebSocket webSocket)
+        public WebSocketHandler(WebSocketServer server, WebSocket webSocket, UsersService usersService, ChatMessageService chatMessageService)
         {
             _server = server;
             _webSocket = webSocket;
+            _usersService = usersService;
+            _chatMessageService = chatMessageService;
         }
 
         public async Task RunAsync()
@@ -43,8 +50,15 @@ namespace ChatTalk.WebServer.Network
 
                 if (baseMessage is JoinMessage joinMessage)
                 {
-                    userId = Guid.NewGuid().ToString();
-                    userName = joinMessage.UserName;
+                    UsersEntity? user = await _usersService.FindJoinUserAsync(joinMessage.UserName);
+
+                    if (user == null)
+                    {
+                        return;
+                    }
+
+                    userId = user.UserId;
+                    userName = user.UserName;
 
                     _server.AddClient(userId, this);
 
@@ -65,6 +79,18 @@ namespace ChatTalk.WebServer.Network
                     });
 
                     return;
+                }
+
+                if(baseMessage is ChatMessage chatMessage)
+                {
+                    ChatMessageEntity entity = new ChatMessageEntity
+                    {
+                        SenderName = chatMessage.Sender,
+                        MessageId = chatMessage.MessageId,
+                        Content = chatMessage.Content
+                    };
+
+                    await _chatMessageService.SaveMessageAsync(entity);
                 }
 
                 await BroadcastAsync(baseMessage);

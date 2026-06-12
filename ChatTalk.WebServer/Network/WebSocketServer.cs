@@ -1,5 +1,6 @@
 ﻿using ChatTalk.Common.Protocol.Messages;
 using ChatTalk.Common.Protocol.Serialization;
+using ChatTalk.WebServer.Data.Service;
 using System.Net.WebSockets;
 using System.Text;
 
@@ -8,11 +9,19 @@ namespace ChatTalk.WebServer.Network;
 public class WebSocketServer
 {
 	private static readonly ClientManager clients = new();
+	private readonly UsersService _usersService;
+	private readonly ChatMessageService _chatMessageService;
+
+	public WebSocketServer(UsersService usersService, ChatMessageService chatMessageService)
+	{
+		_usersService = usersService;
+        _chatMessageService = chatMessageService;
+    }
 
 	public async Task AcceptAsync(WebSocket webSocket)
 	{
         Console.WriteLine("[Connected] : WebSocket opened");
-		var handler = new WebSocketHandler(this, webSocket);
+		var handler = new WebSocketHandler(this, webSocket, _usersService, _chatMessageService);
 
 		try
 		{

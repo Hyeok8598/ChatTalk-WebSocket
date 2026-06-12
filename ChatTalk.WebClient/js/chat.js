@@ -1,22 +1,28 @@
 import * as common from "../common/common.js";
 
+var userName = "";
+
+const userInfo = common.getUserInfo();
 const userNameText = document.getElementById("userNameText");
 const sendButton = document.getElementById("sendButton");
 const statusText = document.getElementById("statusText");
 const messageTextArea = document.getElementById("messageTextArea");
-const userName = sessionStorage.getItem("userName");
 const menuToggleButton = document.getElementById("menuToggleButton");
 const menuPanel = document.getElementById("menuPanel");
 const whisperButton = document.getElementById("whisperButton");
 const whisperPopup = document.getElementById("whisper-popup");
 const userListContainer = document.getElementById("userListContainer");
+const userListDiv = document.getElementById("userListDiv");
 
 const sendMessageIds = new Set();
 
 var socket = null;
 
 window.onload = () => {
-    userNameText.textContent = userName;
+    userNameText.textContent = userInfo.userId;
+    userName = userInfo.userName
+    console.log(userInfo);
+    console.log(userName);
     connectSocket();
 };
 
@@ -134,12 +140,13 @@ function popupCallback(json) {
 };
 
 function refreshUserList(userNames) {
-    userListContainer.replaceChildren();
+    // userListContainer.replaceChildren();
+    userListDiv.replaceChildren();
 
     for(const userName of userNames) {
         const userNameDiv = document.createElement("div");
         userNameDiv.textContent = userName;
         userNameDiv.id = `user-${userName}`;
-        userListContainer.appendChild(userNameDiv);
+        userListDiv.appendChild(userNameDiv);
     }
 };

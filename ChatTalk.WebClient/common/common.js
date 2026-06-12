@@ -19,6 +19,23 @@ export function closeModalPopup(popupNm) {
     modalPopup.classList.add("hidden");
 };
 
+export function setUserInfo(data) {
+    const userInfo = {
+            id       : data.id,
+            userId   : data.userId,
+            userName : data.userName
+        };
+
+    sessionStorage.setItem("userInfo", JSON.stringify(userInfo));
+};
+
+export function getUserInfo() {
+    const userInfo = sessionStorage.getItem("userInfo");
+
+    if(!userInfo) return null;
+
+    return JSON.parse(userInfo);
+}
 
 export async function post(url, body) {
     var server_url = SERVER.AUTH_API + "/" + url;
@@ -33,6 +50,7 @@ export async function post(url, body) {
 
     if(!response.ok) {
         throw new Error(await response.text());
+        return
     }
 
     return await response.json();
