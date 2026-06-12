@@ -1,7 +1,5 @@
 import * as common from "../common/common.js";
 
-var userName = "";
-
 const userInfo = common.getUserInfo();
 const userNameText = document.getElementById("userNameText");
 const sendButton = document.getElementById("sendButton");
@@ -20,9 +18,6 @@ var socket = null;
 
 window.onload = () => {
     userNameText.textContent = userInfo.userId;
-    userName = userInfo.userName
-    console.log(userInfo);
-    console.log(userName);
     connectSocket();
 };
 
@@ -54,11 +49,11 @@ function connectSocket() {
     socket = new WebSocket(common.SERVER.CHAT_WS);
 
     socket.onopen = () => {
-        statusText.textContent = `상태: 접속됨 (${userName})`;
+        statusText.textContent = `상태: 접속됨 (${userInfo.userId})`;
 
         const joinMessage = {
-              type     : "JOIN"
-            , userName : userName
+              type   : "JOIN"
+            , userId : userInfo.userId
         };
 
         socket.send(JSON.stringify(joinMessage));
@@ -91,7 +86,7 @@ function sendMessage(message) {
     const messageId = crypto.randomUUID();
     const sendMessage = {
           type      : "MSG"
-        , sender    : userName
+        , sender    : userInfo.userName
         , content   : message
         , messageId : messageId
     };
@@ -103,7 +98,7 @@ function sendMessage(message) {
 function sendWhisperMessage(targetUser, message) {
     const sendMessage = {
           type      : "WHISPER"
-        , sender    : userName
+        , sender    : userInfo.userName
         , target    : targetUser
         , content   : message
     };
@@ -140,7 +135,6 @@ function popupCallback(json) {
 };
 
 function refreshUserList(userNames) {
-    // userListContainer.replaceChildren();
     userListDiv.replaceChildren();
 
     for(const userName of userNames) {
