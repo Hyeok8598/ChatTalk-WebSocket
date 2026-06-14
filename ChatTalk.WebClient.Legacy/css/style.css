@@ -1,0 +1,48 @@
+:root {
+    --color-primary: #8B5CF6;
+    --color-primary-hover: #7C3AED;
+
+    --color-bg: #111827;
+    --color-sidebar: #1F2937;
+    --color-panel: #222936;
+    --color-panel-light: #374151;
+
+    --color-text: #F9FAFB;
+    --color-muted: #9CA3AF;
+    --color-border: #374151;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html,
+body {
+    width: 100%;
+    height: 100%;
+}
+
+body {
+    font-family: "Segoe UI", Arial, sans-serif;
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    overflow: hidden;
+}
+
+button {
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+textarea {
+    resize: none;
+    outline: none;
+    font-family: inherit;
+}
+
+.hidden {
+    display: none;
+}

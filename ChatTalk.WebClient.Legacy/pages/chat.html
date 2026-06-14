@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8">
+    <title>ChatTalk-WebSocket</title>
+
+    <link rel="stylesheet" href="../css/common.css">
+    <link rel="stylesheet" href="../css/chat.css">
+
+    <script type="module" src="../js/chat.js" defer></script>
+</head>
+
+<body>
+    <main class="chat-layout">
+
+        <aside class="chat-left-sidebar">
+            <h1>ChatTalk</h1>
+            <p id="statusText">상태 : 미접속</p>
+
+            <nav class="room-list">
+                <p class="room-title">채팅방</p>
+                <button class="room-item active" type="button"># 전체 채팅</button>
+            </nav>
+        </aside>
+
+        <section class="chat-main">
+
+            <header class="chat-header">
+                <div>
+                    <strong># 전체 채팅</strong>
+                    <p>실시간으로 메시지를 주고 받는 공간입니다.</p>
+                </div>
+
+                <div class="login-user">
+                    <span>접속 계정</span>
+                    <strong id="userNameText"></strong>
+                </div>
+            </header>
+
+            <section id="chatContainer"></section>
+
+            <footer class="chat-input-area">
+                <div class="chat-menu">
+                    <button id="menuToggleButton" type="button">+</button>
+
+                    <div id="menuPanel" class="hidden">
+                        <button id="whisperButton" type="button">귓속말</button>
+                    </div>
+                </div>
+
+                <textarea id="messageTextArea" placeholder="메시지를 입력하세요."></textarea>
+
+                <button id="sendButton" type="button">전송</button>
+            </footer>
+
+        </section>
+
+        <aside class="chat-right-sidebar">
+            <p class="member-title">접속자 목록</p>
+
+            <div id="userListContainer">
+                <div id="userListDiv"></div>
+            </div>
+        </aside>
+
+    </main>
+
+    <!-- <div id="whisper-popup" class="modal-popup hidden">
+        <iframe src="../pages/popup/whisperPopup.html"></iframe>
+    </div> -->
+
+
+
+    <!-- <h1>ChatTalk</h1>
+    <div id="userListContainer">
+        <label>접속자 목록</label>
+        <div id="userListDiv"></div>
+    </div>
+
+    <div id="chatContainer"></div>
+    
+    <div id="whisper-popup" class="modal-popup hidden">
+        <iframe src="../pages/popup/whisperPopup.html"></iframe>
+    </div>
+
+    <section>
+        <button id="menuToggleButton">+</button>
+        
+        <div id="menuPanel" class="hidden">
+            <button id="whisperButton">귓속말</button>
+        </div>
+
+        <label id="userNameText" style="display: block;"></label>
+        <textarea id="messageTextArea"></textarea>
+        <button id="sendButton">전송</button>
+    </section>
+
+    <section>
+        <section style="display: none">
+            <p id="statusText">상태 : 미접속</p>
+        </section>
+    </section> -->
+</body>
+</html>
