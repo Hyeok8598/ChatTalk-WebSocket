@@ -1,11 +1,36 @@
 import * as common from "../common/common.js";
 
-const loginForm = document.getElementById("loginForm");
+// const loginForm = document.getElementById("loginForm");
 const userIdInput = document.getElementById("userIdInput");
 const passwordInput = document.getElementById("passwordInput");
 const message = document.getElementById("message");
+const loginButton = document.getElementById("loginButton");
+const signupPageButton = document.getElementById("singupPageButton");
 
-loginForm.addEventListener("submit", async (event) => {
+// loginForm.addEventListener("submit", async (event) => {
+//     event.preventDefault();
+
+//     const userId = userIdInput.value;
+//     const password = passwordInput.value;
+
+//     try {
+//         const data = await common.post("api/users/login", {
+//               userId   : userId
+//             , password : password
+//         });
+    
+//         common.setUserInfo(data);
+
+//         message.innerText = "로그인 성공";
+//         location.href = "chat.html";
+//     }
+//     catch {
+//         alert("사용자 정보가 일치하지 않습니다.");
+//         message.innerText = "로그인 실패";
+//     }
+// });
+
+loginButton.addEventListener("click", async (event) => {
     event.preventDefault();
 
     const userId = userIdInput.value;
@@ -26,4 +51,8 @@ loginForm.addEventListener("submit", async (event) => {
         alert("사용자 정보가 일치하지 않습니다.");
         message.innerText = "로그인 실패";
     }
+});
+
+singupPageButton.addEventListener("click", () => {
+    location.href = "signup.html"; 
 });
