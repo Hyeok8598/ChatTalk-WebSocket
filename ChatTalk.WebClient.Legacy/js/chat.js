@@ -112,7 +112,7 @@ function addMessage(message, messageDirection) {
     const messageDiv    = document.createElement("div");
 
     messageDiv.textContent = message;
-    messageDiv.className = "meesage";
+    messageDiv.className = "message";
     
     if(messageDirection == common.MessageDirection.SENT) {
         messageRowDiv.className = "message-row sent";
