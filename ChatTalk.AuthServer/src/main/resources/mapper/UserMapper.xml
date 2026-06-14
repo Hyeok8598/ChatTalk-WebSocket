@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTO Mapper 3.0//EN"
+                        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.chattalk.auth.mapper.UserMapper">
+    <select id="selectOne001"
+            parameterType="com.chattalk.auth.mapper.dto.SelectOne001InDto"
+            resultType="com.chattalk.auth.mapper.dto.SelectOne001OutDto">
+        SELECT USER_ID
+             , USER_NAME
+             , PASSWORD
+          FROM USERS
+         WHERE 1=1
+           AND USER_ID = #{userId}
+    </select>
+
+    <insert id="insert001"
+            parameterType="com.chattalk.auth.mapper.dto.Insert001InDto">
+        INSERT INTO USERS (
+            USER_ID,
+            PASSWORD,
+            USER_NAME
+        )
+        VALUES (
+            #{userId},
+            #{password},
+            #{userName}
+        )
+    </insert>
+</mapper>

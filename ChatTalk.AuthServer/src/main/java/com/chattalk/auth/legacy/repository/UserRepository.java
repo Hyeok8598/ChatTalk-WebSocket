@@ -1,4 +1,4 @@
-package com.chattalk.auth.repository;
+package com.chattalk.auth.legacy.repository;
 
 import com.chattalk.auth.entity.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;

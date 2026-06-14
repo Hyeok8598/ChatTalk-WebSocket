@@ -116,7 +116,7 @@ function addMessage(message, messageDirection) {
     
     if(messageDirection == common.MessageDirection.SENT) {
         messageRowDiv.className = "message-row sent";
-    } else if(messageDirection == MessageDirection.RECEIVED) {
+    } else if(messageDirection == common.MessageDirection.RECEIVED) {
         messageRowDiv.className = "message-row received";
     }
 

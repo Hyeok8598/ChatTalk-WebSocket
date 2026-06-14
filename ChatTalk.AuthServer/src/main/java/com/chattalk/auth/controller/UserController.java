@@ -3,6 +3,7 @@ package com.chattalk.auth.controller;
 import com.chattalk.auth.dto.request.LoginRequest;
 import com.chattalk.auth.dto.request.SignUpRequest;
 import com.chattalk.auth.dto.response.LoginResponse;
+import com.chattalk.auth.dto.response.SignUpResponse;
 import com.chattalk.auth.service.UserService;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,8 +18,8 @@ public class UserController {
     }
 
     @PostMapping("/signup")
-    public void signUp(@RequestBody SignUpRequest signUpRequest) {
-        userService.signUp(signUpRequest);
+    public SignUpResponse signUp(@RequestBody SignUpRequest signUpRequest) {
+        return userService.signUp(signUpRequest);
     }
 
     @PostMapping("/login")

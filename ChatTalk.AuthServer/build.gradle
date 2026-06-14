@@ -23,6 +23,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.10.0'
 	implementation 'com.github.vertical-blank:sql-formatter:2.0.5'
+	implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.4'
 
 	compileOnly 'org.projectlombok:lombok'
 	runtimeOnly 'org.postgresql:postgresql'
