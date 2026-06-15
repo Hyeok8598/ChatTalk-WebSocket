@@ -122,7 +122,7 @@
             </h3>
 
             <div v-for="user in userList" class="space-y-1">
-                <div @click="openUserPopup($event, user)" class="rounded-lg px-3 py-2 hover:bg-slate-700">{{ user }}</div>
+                <div @click="openUserPopup($event, user)" class="rounded-lg px-3 py-2 hover:bg-slate-700">{{ user.userId }}</div>
                 <UserPopupVue v-if="isUserMenuOpen" @close="closeUserPopup" :props="userPopupProps"></UserPopupVue>
             </div>
 
@@ -280,9 +280,10 @@ function openUserPopup(event, user) {
     selectedUser.value = user;
 
     userPopupProps.value = {
-        userName : user,
-        x : event.clientX,
-        y : event.clientY
+        userName : user.userName,
+        userId   : user.userId,
+        x        : event.clientX,
+        y        : event.clientY
     };
 
     isUserMenuOpen.value = true;

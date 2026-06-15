@@ -1,20 +1,37 @@
-﻿using System.Collections.Concurrent;
+﻿using ChatTalk.Common.Protocol.Model;
+using System.Collections.Concurrent;
 using System.Net.WebSockets;
 
 namespace ChatTalk.WebServer.Network
 {
     public class ClientManager
     {
+        public UserInfo userInfo {  get; set; } = new UserInfo();
         private readonly ConcurrentDictionary<string, WebSocketHandler> _clients = new();
 
-        public void Add(string userId, WebSocketHandler handler)
+        public void Add(string connectedId, WebSocketHandler handler)
         {
-            _clients.TryAdd(userId, handler);
+            _clients.TryAdd(connectedId, handler);
         }
 
-        public bool Remove(string userId)
+        public bool Remove(string connectedId)
         {
-            return _clients.TryRemove(userId, out _);
+            return _clients.TryRemove(connectedId, out _);
+        }
+
+        public UserInfo[] GetUserInfo()
+        {
+            foreach (var handler in _clients.Values)
+            {
+                Console.WriteLine(
+                    $"[Client] UserId={handler.UserInfo.UserId}, UserName={handler.UserInfo.UserName}"
+                );
+            }
+
+            return _clients.Values
+                .Select(handler => handler.UserInfo)
+                .Where(user => !string.IsNullOrEmpty(user.UserId))
+                .ToArray();
         }
 
         public Array GetAllHandlers()

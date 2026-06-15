@@ -1,20 +1,14 @@
-﻿using ChatTalk.Common.Protocol.Constant;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ChatTalk.Common.Protocol.Messages
+namespace ChatTalk.Common.Protocol.Model
 {
-    public class JoinMessage : BaseMessage
+    public class UserInfo
     {
         public string UserId { get; set; } = string.Empty;
         public string UserName { get; set; } = string.Empty;
-
-        public JoinMessage()
-        {
-            Type = MessageType.Join;
-        }
     }
 }

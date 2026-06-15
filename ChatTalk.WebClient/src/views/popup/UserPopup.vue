@@ -38,6 +38,7 @@
  * UserPopup Props
  *
  * @typedef {Object} Props
+ * @property {string} userId
  * @property {string} userName
  * @property {number} x
  * @property {number} y
@@ -55,7 +56,7 @@ const { props } = defineProps({
 
 function openUserInfo() {
     userInfoProps.value = {
-        userId   : "",
+        userId   : props.userId,
         userName : props.userName
     };
 

@@ -15,12 +15,12 @@ var builder = WebApplication.CreateBuilder(args);
 //    options.EnableSensitiveDataLogging();
 //});
 builder.Services.AddSingleton<DbConnectionFactory>();
-builder.Services.AddScoped<UsersRepository>();
-builder.Services.AddScoped<UsersService>();
-builder.Services.AddScoped<ChatMessageRepository>();
-builder.Services.AddScoped<ChatMessageService>();
-
-builder.Services.AddScoped<WebSocketServer>();
+builder.Services.AddSingleton<UsersRepository>();
+builder.Services.AddSingleton<UsersService>();
+builder.Services.AddSingleton<ChatMessageRepository>();
+builder.Services.AddSingleton<ChatMessageService>();
+builder.Services.AddSingleton<ClientManager>();
+builder.Services.AddSingleton<WebSocketServer>();
 
 var app = builder.Build();
 
