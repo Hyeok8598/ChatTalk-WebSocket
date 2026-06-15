@@ -106,14 +106,13 @@ async function login() {
         password : password.value
     };
     
-    var response = await post("login", request);
-    if(response) {
+    try {
+        var response = await post("login", request);
         router.push("/chat");
         setUserInfo(response);
-    }
-    else {
-        alert("서버와 접속 오류");
-        return
+    } catch {
+        alert("[ERRROR] 서버가 실행중이 아닙니다.");
+        return;
     }
 };
 

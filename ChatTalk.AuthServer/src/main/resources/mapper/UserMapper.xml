@@ -12,6 +12,9 @@
           FROM USERS
          WHERE 1=1
            AND USER_ID = #{userId}
+        <if test="!password.equals('')">
+           AND PASSWORD = #{password}
+        </if>
     </select>
 
     <insert id="insert001"
@@ -27,4 +30,15 @@
             #{userName}
         )
     </insert>
+
+    <update id="update001"
+            parameterType="com.chattalk.auth.mapper.dto.Insert001InDto">
+        UPDATE USERS
+           SET USER_NAME = #{userName}
+        <if test="!password.equals('')">
+            , PASSWORD = #{password}
+        </if>
+         WHERE 1=1
+           AND USER_ID = #{userId}
+    </update>
 </mapper>
