@@ -1,7 +1,9 @@
 package com.chattalk.auth.controller;
 
+import com.chattalk.auth.dto.request.ChangeRequest;
 import com.chattalk.auth.dto.request.LoginRequest;
 import com.chattalk.auth.dto.request.SignUpRequest;
+import com.chattalk.auth.dto.response.ChangeResponse;
 import com.chattalk.auth.dto.response.LoginResponse;
 import com.chattalk.auth.dto.response.SignUpResponse;
 import com.chattalk.auth.service.UserService;
@@ -28,5 +30,10 @@ public class UserController {
     @PostMapping("/login")
     public LoginResponse login(@RequestBody LoginRequest loginRequest) {
         return userService.login(loginRequest);
+    }
+
+    @PostMapping("/change")
+    public ChangeResponse change(@RequestBody ChangeRequest changeRequest) {
+        return userService.change(changeRequest);
     }
 }

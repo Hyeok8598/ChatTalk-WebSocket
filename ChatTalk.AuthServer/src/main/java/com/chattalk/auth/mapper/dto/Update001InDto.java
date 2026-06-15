@@ -5,7 +5,8 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class SelectOne001InDto {
-    private String userId;
-    private String password;
+public class Update001InDto {
+    String userId;
+    String userName;
+    String password;
 }

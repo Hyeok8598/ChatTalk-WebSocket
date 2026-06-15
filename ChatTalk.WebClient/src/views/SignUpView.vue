@@ -131,18 +131,13 @@ async function signup() {
     };
 
     try {
-
         await post("signup", request);
-
         alert("회원가입 완료");
-
         router.replace("/login");
 
     } catch(error) {
-
         alert("회원가입 실패");
-
-        console.error(error);
+        alert.error(error);
     }
 }
 </script>
