@@ -7,5 +7,5 @@ import lombok.Setter;
 @Setter
 public class SelectOne001InDto {
     private String userId;
-    private String password;
+    private String password = "";
 }

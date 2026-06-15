@@ -2,9 +2,11 @@ package com.chattalk.auth.service;
 
 import com.chattalk.auth.dto.request.ChangeRequest;
 import com.chattalk.auth.dto.request.LoginRequest;
+import com.chattalk.auth.dto.request.SearchRequset;
 import com.chattalk.auth.dto.request.SignUpRequest;
 import com.chattalk.auth.dto.response.ChangeResponse;
 import com.chattalk.auth.dto.response.LoginResponse;
+import com.chattalk.auth.dto.response.SearchResponse;
 import com.chattalk.auth.dto.response.SignUpResponse;
 import com.chattalk.auth.mapper.UserMapper;
 import com.chattalk.auth.mapper.dto.Insert001InDto;
@@ -80,6 +82,7 @@ public class UserService {
     public ChangeResponse change(ChangeRequest request) {
         ChangeResponse result = new ChangeResponse();
         int success = 0;
+
         SelectOne001InDto selectOne001InDto = new SelectOne001InDto();
         SelectOne001OutDto selectOne001OutDto;
         Update001InDto inDto = new Update001InDto();
@@ -104,6 +107,24 @@ public class UserService {
         success = mapper.update001(inDto);
 
         result.setSuccess(success);
+        return result;
+    }
+
+    public SearchResponse search(SearchRequset requset) {
+        SearchResponse result = new SearchResponse();
+        SelectOne001InDto inDto = new SelectOne001InDto();
+        SelectOne001OutDto outDto;
+
+        if(requset.getUserId().isEmpty()) {
+            throw new IllegalArgumentException("사용자 ID는 필수입니다.");
+        }
+
+        inDto.setUserId(requset.getUserId());
+        outDto = mapper.selectOne001(inDto);
+
+        result.setUserId(outDto.getUserId());
+        result.setUserName(outDto.getUserName());
+
         return result;
     }
 }
