@@ -122,35 +122,23 @@
             </h3>
 
             <div v-for="user in userList" class="space-y-1">
-                <div class="rounded-lg px-3 py-2 hover:bg-slate-700">{{ user }}</div>
+                <div @click="openUserPopup($event, user)" class="rounded-lg px-3 py-2 hover:bg-slate-700">{{ user.userId }}</div>
+                <UserPopupVue v-if="isUserMenuOpen" @close="closeUserPopup" :props="userPopupProps"></UserPopupVue>
             </div>
 
             <footer>
                 <button
                     @click="openSetting" 
-                    class="fixed bottom-6 right-6 w-12 h-12 rounded-full bg-slate-700 hover:bg-slate-600 flex items-center justify-center shadow-lg transition">
+                    class="fixed bottom-6 right-6 w-12 h-12 rounded-full bg-slate-700 hover:bg-slate-600 flex items-center justify-center shadow-lg transition"
+                >
                     ⚙️
                 </button>
                 <div
                     v-if="isSettingOpen || isMyInfoOpen"
                     class="fixed inset-0 bg-black/50 flex justify-center items-center"
                 >
-
-                        <SettingPopup v-if="isSettingOpen" @close="closeSetting" @open-my-info="openMyInfo"></SettingPopup>
-                        <MyInfoPopupVue v-if="isMyInfoOpen" @close="closeMyInfo"></MyInfoPopupVue>
-
-                        <!-- <div class="space-y-2">
-                            <button @click="openMyInfo" class="w-full text-left p-2 hover:bg-slate-700 rounded">
-                                내 정보
-                            </button>
-                            <MyInfoPopupVue v-if="isMyInfoOpen" @close="closeMyInfo"/>
-
-                            <button class="w-full text-left p-2 hover:bg-slate-700 rounded">
-                                로그아웃
-                            </button>
-                        </div> -->
-
-                    
+                    <SettingPopupVue v-if="isSettingOpen" @close="closeSetting" @open-my-info="openMyInfo"></SettingPopupVue>
+                    <MyInfoPopupVue v-if="isMyInfoOpen" @close="closeMyInfo"></MyInfoPopupVue>                    
                 </div>
             </footer>
             
@@ -164,7 +152,8 @@ import { reactive, ref } from "vue";
 import { getUserInfo, MESSAGE_DIRECTION, SERVER } from "../util/common";
 import { useRouter } from "vue-router";
 import MyInfoPopupVue from "./popup/MyInfoPopup.vue";
-import SettingPopup from "./popup/SettingPopup.vue";
+import SettingPopupVue from "./popup/SettingPopup.vue";
+import UserPopupVue from "./popup/UserPopup.vue";
 
 const userId = getUserInfo().userId;
 const status = ref('연결중...');
@@ -175,6 +164,9 @@ const messageIds = new Set();
 const router = useRouter();
 const isSettingOpen = ref(false);
 const isMyInfoOpen = ref(false);
+const isUserMenuOpen = ref(false);
+const selectedUser = ref(null);
+const userPopupProps = ref({ x: 0, y: 0});
 
 var socket = null;
 connectSocket();
@@ -282,5 +274,22 @@ function openMyInfo() {
 function closeMyInfo() {
     isSettingOpen.value = true;
     isMyInfoOpen.value = false
-}
+};
+
+function openUserPopup(event, user) {
+    selectedUser.value = user;
+
+    userPopupProps.value = {
+        userName : user.userName,
+        userId   : user.userId,
+        x        : event.clientX,
+        y        : event.clientY
+    };
+
+    isUserMenuOpen.value = true;
+};
+
+function closeUserPopup() {
+    isUserMenuOpen.value = false;
+};
 </script>

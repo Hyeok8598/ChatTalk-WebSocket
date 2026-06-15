@@ -107,10 +107,6 @@ const beforePassword = ref('');
 const newPassword = ref('');
 const confirmPassword = ref('');
 
-function backSettingMenu() {
-    isMyInfoOpen.value = false;
-};
-
 function changePassword() {
     isPasswordChange.value = !isPasswordChange.value;
 };

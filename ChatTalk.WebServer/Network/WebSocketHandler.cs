@@ -1,10 +1,12 @@
 ﻿using ChatTalk.Common.Network;
 using ChatTalk.Common.Protocol.Messages;
+using ChatTalk.Common.Protocol.Model;
 using ChatTalk.Common.Protocol.Serialization;
 using ChatTalk.WebServer.Data.Dapper.Dto;
 using ChatTalk.WebServer.Data.Dapper.Entities;
 using ChatTalk.WebServer.Data.Dapper.Service;
 using ChatTalk.WebServer.Data.EfCore.Service;
+using Microsoft.AspNetCore.Hosting.Server;
 using System.Net.WebSockets;
 using System.Text;
 
@@ -14,18 +16,14 @@ namespace ChatTalk.WebServer.Network
     {
         private readonly WebSocketServer _server;
         private readonly WebSocket _webSocket;
-        private readonly UsersService _usersService;
-        private readonly ChatMessageService _chatMessageService;
+        
+        public string ConnectId { get; } = Guid.NewGuid().ToString();
+        public UserInfo UserInfo { get; private set; } = new();
 
-        private string userName = string.Empty;
-        private string userId = string.Empty;
-
-        public WebSocketHandler(WebSocketServer server, WebSocket webSocket, UsersService usersService, ChatMessageService chatMessageService)
+        public WebSocketHandler(WebSocketServer server, WebSocket webSocket)
         {
             _server = server;
             _webSocket = webSocket;
-            _usersService = usersService;
-            _chatMessageService = chatMessageService;
         }
 
         public async Task RunAsync()
@@ -36,10 +34,10 @@ namespace ChatTalk.WebServer.Network
                 if (receive.Result.MessageType == WebSocketMessageType.Close)
                 {
                     //await CloseAsync(receive);
-                    _server.RemoveClient(userId);
+                    _server.Clients.Remove(ConnectId);
                     await BroadcastAsync(new UserListMessage
                     {
-                        Users = _server.GetUserNames()
+                        
                     });
                 }
                 else if (receive.Result.MessageType == WebSocketMessageType.Text)
@@ -53,7 +51,7 @@ namespace ChatTalk.WebServer.Network
                     if (baseMessage is JoinMessage joinMessage)
                     {
                         UsersDto usersDto = new UsersDto { UserId = joinMessage.UserId };
-                        UsersEntity? user = await _usersService.SelectOne001(usersDto);
+                        UsersEntity? user = await _server.UsersService.SelectOne001(usersDto);
 
                         if (user == null)
                         {
@@ -61,14 +59,14 @@ namespace ChatTalk.WebServer.Network
                             return;
                         }
 
-                        userId = user.UserId;
-                        userName = user.UserName;
+                        UserInfo.UserId = user.UserId;
+                        UserInfo.UserName = user.UserName;
 
-                        _server.AddClient(userId, this);
+                        _server.Clients.Add(ConnectId, this);
 
                         await BroadcastAsync(new UserListMessage
                         {
-                            Users = _server.GetUserNames()
+                            Users = _server.Clients.GetUserInfo()
                         });
 
                         return;
@@ -76,10 +74,10 @@ namespace ChatTalk.WebServer.Network
 
                     if (baseMessage is LeaveMessage leaveMessage)
                     {
-                        _server.RemoveClient(leaveMessage.UserName);
+                        _server.Clients.Remove(ConnectId);
                         await BroadcastAsync(new UserListMessage
                         {
-                            Users = _server.GetUserNames()
+                            Users = _server.Clients.GetUserInfo()
                         });
 
                         return;
@@ -94,7 +92,7 @@ namespace ChatTalk.WebServer.Network
                             Content = chatMessage.Content
                         };
 
-                        await _chatMessageService.Insert001(chatMessageDto);
+                        await _server.ChatMessageService.Insert001(chatMessageDto);
                     }
                     await BroadcastAsync(baseMessage);
                 }
@@ -150,11 +148,6 @@ namespace ChatTalk.WebServer.Network
             }
 
             return message;
-        }
-
-        public string GetUserName()
-        {
-            return userName;
         }
     }
 }
