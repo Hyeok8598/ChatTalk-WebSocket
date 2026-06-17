@@ -52,8 +52,18 @@
                 >
                     <div
                         class="max-w-md rounded-xl px-4 py-3"
-                        :class="message.direction == MESSAGE_DIRECTION.SENT ? 'bg-violet-500' : 'bg-slate-700'"
+                        :class="[
+                            message.direction == MESSAGE_DIRECTION.SENT ? 'bg-violet-500' : 'bg-slate-700',
+
+                            message.isWhisper ? 'bg-slate-800 border boreder-violet-400' : ''
+                        ]"
                     >
+                        <div 
+                            v-if="message.isWhisper"
+                            class="mb-1 text-xs text-violet-300"
+                        >
+                            🔒 귓속말
+                        </div>
                         {{ message.content }}
                     </div>
                 </div>
@@ -82,20 +92,51 @@
                     +
                 </button>
 
-                <input
-                    v-model="message"
-                    type="text"
-                    placeholder="메시지를 입력하세요."
+                <!-- <div ref="messageInput"
+                    contenteditable="true"
+                    class="flex-1 min-h-12 rounded-xl bg-slate-700 px-4 py-3 text-white outline-none"
+                    @input="onInput"
+                >
+                    <MentionTag v-if="metionUser" :user-name="metionUser.userName"/>
+                </div> -->
+                <div
                     class="
                         flex-1
-                        h-12
+                        min-h-12
                         rounded-xl
                         bg-slate-700
                         px-4
-                        text-white
-                        placeholder-gray-400
-                        outline-none
-                    " />
+                        py-2
+                        flex
+                        items-center
+                        gap-2
+                    "
+                >
+                    <MentionTag
+                        v-if="mentionUser"
+                        :user-name="mentionUser.userName"
+                    />
+                    <WhisperTag
+                        v-if="whisperUser"
+                        :user-name="whisperUser.userName"
+                    />
+
+                    <input
+                        ref="messageInput"
+                        v-model="message"
+                        class="
+                            flex-1
+                            bg-transparent
+                            outline-none
+                            text-white
+                        "
+                        @input="onInput"
+                        @keydown="onKeydown"
+                    />
+                </div>
+
+                <!-- @click="selectMention(user)"? -->
+                <UserPickerPopupVue v-if="isUserPickerOpen" :props="userPickerProps" @select="selectUser"/>
 
                 <button
                     @click="clickSendButton"
@@ -105,8 +146,8 @@
                         rounded-xl
                         bg-violet-500
                         text-white
-                        font-bold
-                    ">
+                        font-bold"
+                    >
                     전송
                 </button>
 
@@ -122,7 +163,7 @@
             </h3>
 
             <div v-for="user in userList" class="space-y-1">
-                <div @click="openUserPopup($event, user)" class="rounded-lg px-3 py-2 hover:bg-slate-700">{{ user.userId }}</div>
+                <div @click="openUserPopup($event, user)" class="rounded-lg px-3 py-2 hover:bg-slate-700">{{ user.userName }}</div>
                 <UserPopupVue v-if="isUserMenuOpen" @close="closeUserPopup" :props="userPopupProps"></UserPopupVue>
             </div>
 
@@ -148,12 +189,15 @@
 </template>
 
 <script setup>
-import { reactive, ref } from "vue";
+import { nextTick, reactive, ref } from "vue";
 import { getUserInfo, MESSAGE_DIRECTION, SERVER } from "../util/common";
 import { useRouter } from "vue-router";
 import MyInfoPopupVue from "./popup/MyInfoPopup.vue";
 import SettingPopupVue from "./popup/SettingPopup.vue";
 import UserPopupVue from "./popup/UserPopup.vue";
+import UserPickerPopupVue from "./popup/UserPickerPopup.vue";
+import MentionTag from "../components/MentionTag.vue";
+import WhisperTag from "../components/WhisperTag.vue";
 
 const userId = getUserInfo().userId;
 const status = ref('연결중...');
@@ -167,12 +211,35 @@ const isMyInfoOpen = ref(false);
 const isUserMenuOpen = ref(false);
 const selectedUser = ref(null);
 const userPopupProps = ref({ x: 0, y: 0});
+const userPickerProps = ref({});
+const isUserPickerOpen = ref(false);
+const filterUsers = ref([]);
+const messageInput = ref(null);
+const mentionUser = ref(null);
+const whisperUser = ref(null);
+const metionTag = ref(null);
+
+const InputMode = {
+    NONE    : "NONE",
+    MENTION : "MENTION",
+    WHISPER : "WHISPER"
+};
+
+const inputModeState = ref({
+    mode: InputMode.NONE,
+    keyword: ""
+});
 
 var socket = null;
 connectSocket();
 
 async function clickSendButton() {
-    sendMessage(message.value);
+    if(inputModeState.value.mode == InputMode.WHISPER) {
+        await sendWhisperMessage(message.value);
+    } else {
+        await sendMessage(message.value);
+    }
+    clearMessageInput();
 };
 
 function connectSocket() {
@@ -207,6 +274,9 @@ function receiveMessage(event) {
         addMessage(data, MESSAGE_DIRECTION.RECEIVE);
     } else if(data.type == "USRLIST") {
         refreshUserList(data);
+    } else if(data.type == "WHISPER") {
+        if(messageIds.has(data.messageId)) return;
+        addMessage(data, MESSAGE_DIRECTION.RECEIVE, true);
     }
 };
 
@@ -215,23 +285,28 @@ function sendMessage(message) {
 
     const data = {
         type      : "MSG",
-        sender    : getUserInfo().userName,
+        sender    : getUserInfo().userId,
         content   : message,
         messageId : messageId
     };
+
     messageIds.add(messageId, MESSAGE_DIRECTION.SENT);
     addMessage(data, MESSAGE_DIRECTION.SENT);
     socket.send(JSON.stringify(data));
 };
 
-function sendWhisperMessage(targetUser, message) {
+function sendWhisperMessage(message) {
+    const messageId = crypto.randomUUID();
+
     const data = {
           type      : "WHISPER"
-        , sender    : userInfo.userName
-        , target    : targetUser
+        , sender    : getUserInfo().userId
+        , target    : whisperUser.value.userId
         , content   : message
     };
 
+    messageIds.add(messageId, MESSAGE_DIRECTION.SENT);
+    addMessage(data, MESSAGE_DIRECTION.SENT, inputModeState.value.mode == InputMode.WHISPER);
     socket.send(JSON.stringify(data));
 };
 
@@ -246,11 +321,12 @@ function refreshUserList(data) {
     userList.value = data.users;
 };
 
-function addMessage(data, messageDirection) {
+function addMessage(data, messageDirection, isWhisper=false) {
     messages.value.push({
         messageId : data.messageId,
         direction : messageDirection,
-        content   : data.content
+        content   : data.content,
+        isWhisper : isWhisper
     });
 };
 
@@ -291,5 +367,102 @@ function openUserPopup(event, user) {
 
 function closeUserPopup() {
     isUserMenuOpen.value = false;
+};
+
+function showMentionPopup() {
+    isUserPickerOpen.value = true;
+};
+
+function closeMentionPopup() {
+    isUserPickerOpen.value = false;
+};
+
+function onInput() {
+    const text = message.value;
+    inputModeState.value = checkInputMode(text);
+
+    if(inputModeState.value.mode === InputMode.NONE) {
+        isUserPickerOpen.value = false;
+        return;
+    }
+
+    filterUsers.value = userList.value.filter(
+        user => user.userName?.includes(inputModeState.value.keyword)
+    );
+
+    const rect = messageInput.value.getBoundingClientRect();
+
+    userPickerProps.value = {
+        users : filterUsers.value,
+        left  : rect.left,
+        top   : rect.top - 80
+    };
+
+    showMentionPopup();
+};
+
+function onKeydown(event) {
+    if(event.key === "Backspace" && message.value.length === 0 && mentionUser.value) mentionUser.value = "";
+    if(event.key === "Backspace" && message.value.length === 0 && whisperUser.value) whisperUser.value = "";
+    if(event.key === "Enter") clickSendButton();
+};
+
+async function selectUser(user) {
+    if(inputModeState.value.mode === InputMode.MENTION) {
+        mentionUser.value = user;
+    } else if(inputModeState.value.mode === InputMode.WHISPER) {
+        whisperUser.value = user;
+    }
+    
+    isUserPickerOpen.value = false;
+    await nextTick();
+    messageInput.value.focus();
+    message.value = "";
+};
+
+function clearMessageInput() {
+    mentionUser.value = null;
+    message.value = "";
+
+    if(inputModeState.value.mode !== InputMode.WHISPER) {
+        inputModeState.value = {
+            mode: InputMode.NONE,
+            keyword: ""
+        };
+
+        mentionUser.value = null;
+        whisperUser.value = null;
+    }
+};
+
+function checkInputMode(text) {
+    if(mentionUser.value) {
+
+    }
+
+    if(whisperUser.value) {
+        return inputModeState.value;
+    }
+
+    const mentionMatch = text.match(/@([^\s@]*)$/);
+    if(mentionMatch) {
+        return {
+            mode : InputMode.MENTION,
+            keyword : mentionMatch[1]
+        };
+    }
+
+    const whisperMatch = text.match(/\/w([^\s]*)$/);
+    if(whisperMatch) {
+        return {
+            mode : InputMode.WHISPER,
+            keyword : whisperMatch[1]
+        };
+    }
+
+    return {
+        mode : InputMode.NONE,
+        keyword : ""
+    }
 };
 </script>

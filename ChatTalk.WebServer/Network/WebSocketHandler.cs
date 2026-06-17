@@ -62,11 +62,13 @@ namespace ChatTalk.WebServer.Network
                         UserInfo.UserId = user.UserId;
                         UserInfo.UserName = user.UserName;
 
+                        Console.WriteLine($"유저 설정: {UserInfo.UserName}, {UserInfo.UserId}");
+
                         _server.Clients.Add(ConnectId, this);
 
                         await BroadcastAsync(new UserListMessage
                         {
-                            Users = _server.Clients.GetUserInfo()
+                            Users = _server.Clients.GetAllUserInfo()
                         });
 
                         return;
@@ -77,9 +79,20 @@ namespace ChatTalk.WebServer.Network
                         _server.Clients.Remove(ConnectId);
                         await BroadcastAsync(new UserListMessage
                         {
-                            Users = _server.Clients.GetUserInfo()
+                            Users = _server.Clients.GetAllUserInfo()
                         });
 
+                        return;
+                    }
+
+                    if(baseMessage is WhisperMessage whisperMessage)
+                    {
+                        UsersDto usersDto = new UsersDto { UserId = whisperMessage.Target };
+                        UsersEntity? user = await _server.UsersService.SelectOne001(usersDto);
+
+                        string sendJson = MessageSerializer.Serialize(baseMessage);
+                        byte[] sendBytes = Encoding.UTF8.GetBytes(sendJson);
+                        await _server.SendToClientAsync(sendBytes, whisperMessage.Target);
                         return;
                     }
 
