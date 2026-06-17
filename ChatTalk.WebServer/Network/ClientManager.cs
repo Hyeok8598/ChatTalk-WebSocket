@@ -6,7 +6,6 @@ namespace ChatTalk.WebServer.Network
 {
     public class ClientManager
     {
-        public UserInfo userInfo {  get; set; } = new UserInfo();
         private readonly ConcurrentDictionary<string, WebSocketHandler> _clients = new();
 
         public void Add(string connectedId, WebSocketHandler handler)
@@ -19,7 +18,7 @@ namespace ChatTalk.WebServer.Network
             return _clients.TryRemove(connectedId, out _);
         }
 
-        public UserInfo[] GetUserInfo()
+        public UserInfo[] GetAllUserInfo()
         {
             foreach (var handler in _clients.Values)
             {
@@ -32,6 +31,15 @@ namespace ChatTalk.WebServer.Network
                 .Select(handler => handler.UserInfo)
                 .Where(user => !string.IsNullOrEmpty(user.UserId))
                 .ToArray();
+        }
+
+        public WebSocketHandler? GetHandler(string userId)
+        {
+            WebSocketHandler? h = _clients.Values.FirstOrDefault(
+                    handler => handler.UserInfo.UserId == userId
+                );
+            Console.WriteLine($"userID: {h?.UserInfo.UserId}");
+            return h;
         }
 
         public Array GetAllHandlers()

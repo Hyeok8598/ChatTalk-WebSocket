@@ -48,4 +48,17 @@ public class WebSocketServer
 			await handler.SendAsync(sendBytes);
         }
     }
+
+	public async Task SendToClientAsync(byte[] sendBytes, string userId)
+    {
+		WebSocketHandler? handler = Clients.GetHandler(userId);
+
+		if (handler == null)
+		{
+			Console.WriteLine($"[Error] Target user not connected. UserId={userId}");
+			return;
+		}
+
+		await handler.SendAsync(sendBytes);
+	}
 }

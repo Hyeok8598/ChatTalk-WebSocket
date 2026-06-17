@@ -117,7 +117,6 @@ async function search() {
     };
 
     var result = await post("search", data);
-    console.log(result);
 };
 
 </script>
