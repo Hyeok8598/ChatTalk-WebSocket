@@ -1,7 +1,6 @@
-﻿using ChatTalk.Common.Protocol.Model;
-using ChatTalk.WebServer.Data.Dapper.Service;
+﻿using ChatTalk.WebServer.Data.Dapper.Service;
 using ChatTalk.WebServer.Data.EfCore.Service;
-using System.Net.WebSockets;
+using ChatTalk.WebServer.Network.Service;
 
 namespace ChatTalk.WebServer.Network;
 
@@ -11,54 +10,36 @@ public class WebSocketServer
 	public UsersService UsersService { get; }
 	public ChatMessageService ChatMessageService { get; }
 
-	public WebSocketServer(UsersService usersService, ChatMessageService chatMessageService)
+	private readonly WebSocketAcceptService _webSocketAcceptService;
+
+	public WebSocketServer(UsersService usersService, ChatMessageService chatMessageService, WebSocketAcceptService webSocketAcceptService)
 	{
         Console.WriteLine($"[ClientManager] Hash={GetHashCode()}");
 
         Clients = new ClientManager();
         UsersService = usersService;
         ChatMessageService = chatMessageService;
+        _webSocketAcceptService = webSocketAcceptService;
     }
 
-	public async Task AcceptAsync(WebSocket webSocket)
+	public async Task AcceptAsync(HttpContext httpContext)
 	{
-        Console.WriteLine("[Connected] : WebSocket opened");
-		var handler = new WebSocketHandler(this, webSocket);
+		await _webSocketAcceptService.AccecptAsync(httpContext);
+  //      Console.WriteLine("[Connected] : WebSocket opened");
+  //var handler = new WebSocketHandler(this, webSocket);
 
-		try
-		{
-			while(webSocket.State == WebSocketState.Open)
-			{
-				await handler.RunAsync();
-			}
-		}
-		catch (Exception ex)
-		{
-			Console.WriteLine($"[Error] : {ex.Message}");
-		}
+        //try
+        //{
+        //	while(webSocket.State == WebSocketState.Open)
+        //	{
+        //		await handler.RunAsync();
+        //	}
+        //}
+        //catch (Exception ex)
+        //{
+        //	Console.WriteLine($"[Error] : {ex.Message}");
+        //}
 
-        Console.WriteLine("[Disconnected] WebSocket closed");
+        //      Console.WriteLine("[Disconnected] WebSocket closed");
     }
-
-	public async Task BroadCastAsync(byte[] sendBytes)
-	{
-		Array handlers = Clients.GetAllHandlers();
-		foreach (WebSocketHandler handler in handlers)
-		{
-			await handler.SendAsync(sendBytes);
-        }
-    }
-
-	public async Task SendToClientAsync(byte[] sendBytes, string userId)
-    {
-		WebSocketHandler? handler = Clients.GetHandler(userId);
-
-		if (handler == null)
-		{
-			Console.WriteLine($"[Error] Target user not connected. UserId={userId}");
-			return;
-		}
-
-		await handler.SendAsync(sendBytes);
-	}
 }
