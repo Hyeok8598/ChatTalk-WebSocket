@@ -4,6 +4,7 @@ using ChatTalk.WebServer.Data.Dapper.Repositoy;
 using ChatTalk.WebServer.Data.Dapper.Service;
 using ChatTalk.WebServer.Data.EfCore.Service;
 using ChatTalk.WebServer.Network;
+using ChatTalk.WebServer.Network.Service;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,12 +16,22 @@ var builder = WebApplication.CreateBuilder(args);
 //    options.EnableSensitiveDataLogging();
 //});
 builder.Services.AddSingleton<DbConnectionFactory>();
-builder.Services.AddSingleton<UsersRepository>();
-builder.Services.AddSingleton<UsersService>();
-builder.Services.AddSingleton<ChatMessageRepository>();
-builder.Services.AddSingleton<ChatMessageService>();
+
+builder.Services.AddScoped<UsersRepository>();
+builder.Services.AddScoped<UsersService>();
+builder.Services.AddScoped<ChatMessageRepository>();
+builder.Services.AddScoped<ChatMessageService>();
+
 builder.Services.AddSingleton<ClientManager>();
-builder.Services.AddSingleton<WebSocketServer>();
+builder.Services.AddScoped<WebSocketServer>();
+
+builder.Services.AddScoped<MessageDispatcherService>();
+builder.Services.AddScoped<MessageService>();
+builder.Services.AddScoped<SessionService>();
+builder.Services.AddScoped<WebSocketAcceptService>();
+builder.Services.AddScoped<WebSocketReceiveService>();
+builder.Services.AddScoped<WebSocketSendService>();
+builder.Services.AddScoped<WhisperService>();
 
 var app = builder.Build();
 
@@ -28,14 +39,7 @@ app.UseWebSockets();
 
 app.Map("/ws", async (HttpContext context, WebSocketServer webSocketServer) =>
 {
-    if (!context.WebSockets.IsWebSocketRequest)
-    {
-        context.Response.StatusCode = 400;
-        return;
-    }
-
-    var webSocket = await context.WebSockets.AcceptWebSocketAsync();
-    await webSocketServer.AcceptAsync(webSocket);
+    await webSocketServer.AcceptAsync(context);
 });
 
 app.Run();
