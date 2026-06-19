@@ -1,4 +1,4 @@
-package com.chattalk.auth.entity;
+package com.chattalk.auth.legacy.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;

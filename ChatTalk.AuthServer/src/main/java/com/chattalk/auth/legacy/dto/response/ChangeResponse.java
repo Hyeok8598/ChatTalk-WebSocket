@@ -1,4 +1,4 @@
-package com.chattalk.auth.dto.response;
+package com.chattalk.auth.legacy.dto.response;
 
 import lombok.Getter;
 import lombok.Setter;

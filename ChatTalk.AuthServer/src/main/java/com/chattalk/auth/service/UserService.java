@@ -1,129 +1,105 @@
 package com.chattalk.auth.service;
 
-import com.chattalk.auth.dto.request.ChangeRequest;
-import com.chattalk.auth.dto.request.LoginRequest;
-import com.chattalk.auth.dto.request.SearchRequset;
-import com.chattalk.auth.dto.request.SignUpRequest;
-import com.chattalk.auth.dto.response.ChangeResponse;
-import com.chattalk.auth.dto.response.LoginResponse;
-import com.chattalk.auth.dto.response.SearchResponse;
-import com.chattalk.auth.dto.response.SignUpResponse;
-import com.chattalk.auth.mapper.UserMapper;
-import com.chattalk.auth.mapper.dto.Insert001InDto;
-import com.chattalk.auth.mapper.dto.SelectOne001InDto;
-import com.chattalk.auth.mapper.dto.SelectOne001OutDto;
-import com.chattalk.auth.mapper.dto.Update001InDto;
+import com.chattalk.auth.common.util.CommonUtil;
+import com.chattalk.auth.common.util.CryptoUtil;
+import com.chattalk.auth.common.DataMap;
+import com.chattalk.auth.mapper.UsersMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 public class UserService {
-    private final UserMapper mapper;
+    private final UsersMapper mapper;
 
-    public UserService(UserMapper mapper) {
+    public UserService(UsersMapper mapper) {
         this.mapper = mapper;
     }
 
-    public SignUpResponse signUp(SignUpRequest request) {
-        SelectOne001InDto selectOne001InDto = new SelectOne001InDto();
-        SelectOne001OutDto selectOne001OutDto;
-        Insert001InDto insertInDto = new Insert001InDto();
-        SignUpResponse result = new SignUpResponse();
-        int success = 0;
+    public int signUp(DataMap dataMap) {
+        DataMap insertMap;
 
-        if(request.getUserId() == null) {
+        String userId   = dataMap.getParam("userId");
+        String password = CryptoUtil.encode(dataMap.getParam("password"));
+        String userName = dataMap.getParam("userName");
+
+        log.info("[password]={}", password);
+
+        if(CommonUtil.isEmpty(userId)) {
             throw new IllegalArgumentException("사용자 ID는 필수입니다.");
         }
 
-        if(request.getPassword() == null) {
+        if(CommonUtil.isEmpty(password)) {
             throw new IllegalArgumentException("패스워드는 필수입니다.");
         }
 
-        if(request.getUserName() == null) {
+        if(CommonUtil.isEmpty(userName)) {
             throw new IllegalArgumentException("사용자명은 필수입니다.");
         }
 
-        selectOne001InDto.setUserId(request.getUserId());
-        selectOne001OutDto = mapper.selectOne001(selectOne001InDto);
+        DataMap result = mapper.usersSelectOne002(dataMap);
 
-        if(selectOne001OutDto != null) {
+        if(!CommonUtil.isEmpty(result)) {
             throw new IllegalArgumentException("유저 ID가 존재합니다.");
         }
 
-        insertInDto.setUserId(request.getUserId());
-        insertInDto.setPassword(request.getPassword());
-        insertInDto.setUserName(request.getUserName());
+        insertMap = dataMap;
+        insertMap.setParam("password", password);
 
-        success = mapper.insert001(insertInDto);
-
-        result.setSuccess(success);
-        return result;
+        return mapper.usersInsert001(dataMap);
     }
 
-    public LoginResponse login(LoginRequest request) {
-        LoginResponse result = new LoginResponse();
-        SelectOne001InDto inDto = new SelectOne001InDto();
-        inDto.setUserId(request.getUserId());
+    public DataMap login(DataMap dataMap) {
+        DataMap result = mapper.usersSelectOne001(dataMap);
+        String inputPw = dataMap.getParam("password");
+        String savedPw = "";
 
-        SelectOne001OutDto outDto = mapper.selectOne001(inDto);
-
-        if(outDto == null) {
+        if(CommonUtil.isEmpty(result)) {
             throw new RuntimeException("존재하지 않는 사용자입니다.");
         }
 
-        if(!outDto.getPassword().equals(request.getPassword())) {
+        savedPw = result.getParam("password");
+
+        if(!CryptoUtil.matches(inputPw, savedPw)) {
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
         }
 
-        result.setUserId(outDto.getUserId());
-        result.setUserName(outDto.getUserName());
         return result;
     }
 
-    public ChangeResponse change(ChangeRequest request) {
-        ChangeResponse result = new ChangeResponse();
-        int success = 0;
+    public int change(DataMap dataMap) {
+        DataMap result, insertMap;
+        String bfPw = "";
+        String afPw = dataMap.getParam("password");
+        String encodePw = CryptoUtil.encode(afPw);
 
-        SelectOne001InDto selectOne001InDto = new SelectOne001InDto();
-        SelectOne001OutDto selectOne001OutDto;
-        Update001InDto inDto = new Update001InDto();
+        result = mapper.usersSelectOne001(dataMap);
 
-        selectOne001InDto.setUserId(request.getUserId());
-        selectOne001InDto.setPassword(request.getBeforePassword());
-
-        selectOne001OutDto = mapper.selectOne001(selectOne001InDto);
-
-        if(selectOne001OutDto == null) {
+        if(CommonUtil.isEmpty(dataMap)) {
             throw new IllegalArgumentException("사용자 정보가 일치하지 않습니다.");
         }
 
-        if(selectOne001OutDto.getPassword().equals(request.getAfterPassword())) {
+        bfPw = result.getParam("password");
+
+        if(CryptoUtil.matches(bfPw, afPw)) {
             throw new IllegalArgumentException("이전 비밀번호와 일치합니다.");
         }
 
-        inDto.setUserId(request.getUserId());
-        inDto.setUserName(request.getUserName());
-        inDto.setPassword(request.getAfterPassword());
+        insertMap = result;
+        insertMap.setParam("password", encodePw);
 
-        success = mapper.update001(inDto);
-
-        result.setSuccess(success);
-        return result;
+        return mapper.usersUpdate001(insertMap);
     }
 
-    public SearchResponse search(SearchRequset requset) {
-        SearchResponse result = new SearchResponse();
-        SelectOne001InDto inDto = new SelectOne001InDto();
-        SelectOne001OutDto outDto;
+    public DataMap search(DataMap dataMap) {
+        DataMap result;
+        String userId = dataMap.getParam("userId");
 
-        if(requset.getUserId().isEmpty()) {
+        if(CommonUtil.isEmpty(userId)) {
             throw new IllegalArgumentException("사용자 ID는 필수입니다.");
         }
 
-        inDto.setUserId(requset.getUserId());
-        outDto = mapper.selectOne001(inDto);
-
-        result.setUserId(outDto.getUserId());
-        result.setUserName(outDto.getUserName());
+        result = mapper.usersSelectOne002(dataMap);
 
         return result;
     }

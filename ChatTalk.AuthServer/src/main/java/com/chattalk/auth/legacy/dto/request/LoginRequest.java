@@ -1,4 +1,4 @@
-package com.chattalk.auth.dto.request;
+package com.chattalk.auth.legacy.dto.request;
 
 import lombok.Getter;
 
