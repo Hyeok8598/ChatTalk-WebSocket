@@ -2,23 +2,25 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTO Mapper 3.0//EN"
                         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.chattalk.auth.mapper.UserMapper">
-    <select id="selectOne001"
-            parameterType="com.chattalk.auth.mapper.dto.SelectOne001InDto"
-            resultType="com.chattalk.auth.mapper.dto.SelectOne001OutDto">
+<mapper namespace="com.chattalk.auth.mapper.UsersMapper">
+    <select id="usersSelectOne001">
         SELECT USER_ID
              , USER_NAME
              , PASSWORD
           FROM USERS
          WHERE 1=1
            AND USER_ID = #{userId}
-        <if test="!password.equals('')">
-           AND PASSWORD = #{password}
-        </if>
     </select>
 
-    <insert id="insert001"
-            parameterType="com.chattalk.auth.mapper.dto.Insert001InDto">
+    <select id="usersSelectOne002">
+        SELECT USER_ID
+             , USER_NAME
+          FROM USERS
+         WHERE 1=1
+           AND USER_ID = #{userId}
+    </select>
+
+    <insert id="usersInsert001">
         INSERT INTO USERS (
             USER_ID,
             PASSWORD,
@@ -31,8 +33,7 @@
         )
     </insert>
 
-    <update id="update001"
-            parameterType="com.chattalk.auth.mapper.dto.Insert001InDto">
+    <update id="usersUpdate001">
         UPDATE USERS
            SET USER_NAME = #{userName}
         <if test="!password.equals('')">

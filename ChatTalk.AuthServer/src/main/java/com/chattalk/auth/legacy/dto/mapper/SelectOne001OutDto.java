@@ -1,4 +1,4 @@
-package com.chattalk.auth.mapper.dto;
+package com.chattalk.auth.legacy.dto.mapper;
 
 import lombok.Getter;
 

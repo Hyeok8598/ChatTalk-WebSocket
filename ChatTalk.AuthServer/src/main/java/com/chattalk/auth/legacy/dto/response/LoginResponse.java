@@ -1,12 +1,11 @@
-package com.chattalk.auth.mapper.dto;
+package com.chattalk.auth.legacy.dto.response;
 
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class Insert001InDto {
+public class LoginResponse {
     private String userId;
     private String userName;
-    private String password;
 }

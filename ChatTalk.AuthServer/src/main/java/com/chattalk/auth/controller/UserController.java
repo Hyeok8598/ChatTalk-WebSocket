@@ -1,22 +1,11 @@
 package com.chattalk.auth.controller;
 
-import com.chattalk.auth.dto.request.ChangeRequest;
-import com.chattalk.auth.dto.request.LoginRequest;
-import com.chattalk.auth.dto.request.SearchRequset;
-import com.chattalk.auth.dto.request.SignUpRequest;
-import com.chattalk.auth.dto.response.ChangeResponse;
-import com.chattalk.auth.dto.response.LoginResponse;
-import com.chattalk.auth.dto.response.SearchResponse;
-import com.chattalk.auth.dto.response.SignUpResponse;
+import com.chattalk.auth.common.DataMap;
 import com.chattalk.auth.service.UserService;
 import org.springframework.web.bind.annotation.*;
 
-@CrossOrigin(origins = {
-        "http://127.0.0.1:5173",
-        "http://localhost:5173"
-})
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/users")
 public class UserController {
     private final UserService userService;
 
@@ -25,22 +14,22 @@ public class UserController {
     }
 
     @PostMapping("/signup")
-    public SignUpResponse signUp(@RequestBody SignUpRequest signUpRequest) {
-        return userService.signUp(signUpRequest);
+    public int signUp(@RequestBody DataMap dataMap) {
+        return userService.signUp(dataMap);
     }
 
     @PostMapping("/login")
-    public LoginResponse login(@RequestBody LoginRequest loginRequest) {
-        return userService.login(loginRequest);
+    public DataMap login(@RequestBody DataMap dataMap) {
+        return userService.login(dataMap);
     }
 
     @PostMapping("/change")
-    public ChangeResponse change(@RequestBody ChangeRequest changeRequest) {
-        return userService.change(changeRequest);
+    public int change(@RequestBody DataMap dataMap) {
+        return userService.change(dataMap);
     }
 
     @PostMapping("/search")
-    public SearchResponse search(@RequestBody SearchRequset searchRequset) {
-        return userService.search(searchRequset);
+    public DataMap search(@RequestBody DataMap dataMap) {
+        return userService.search(dataMap);
     }
 }
