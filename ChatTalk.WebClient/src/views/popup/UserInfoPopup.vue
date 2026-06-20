@@ -1,11 +1,11 @@
 <template>
     <div
     class="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
-    @click="$emit('close')"
+    @click="closeUserInfo"
 >
     <div
         class="w-96 rounded-lg bg-slate-800 p-6 shadow-lg"
-        
+        @click.stop
     >
         <div class="flex justify-between items-center mb-4">
             <h2 class="text-xl font-bold text-white">
@@ -13,7 +13,7 @@
             </h2>
 
             <button
-                @click="emit('close')"
+                @click="closeUserInfo"
                 class="text-gray-400 hover:text-white"
             >
                 ✖
@@ -68,7 +68,7 @@
 
         <div class="flex gap-2 pt-4">
             <button
-                @click="emit('close')"
+                @click="closeUserInfo"
                 class="
                     flex-1
                     rounded-lg
@@ -89,27 +89,20 @@
 </template>
 
 <script setup>
-
-/**
- * UserInfo Props
- *
- * @typedef {Object} Props
- * @property {string} userName
- * @property {string} userId
- */
-
 import { post } from '../../util/common';
 import { onMounted, ref } from "vue";
+
+const emit = defineEmits([
+    'closeUserInfo'
+]);
 
 onMounted(() => {
     search();
 });
 
-const { props }  = defineProps({
+const { props } = defineProps({
     props : Object
 });
-
-const emit = defineEmits(['close']);
 
 async function search() {
     var data = {
@@ -117,6 +110,10 @@ async function search() {
     };
 
     var result = await post("search", data);
+};
+
+function closeUserInfo() {
+    emit("closeUserInfo");
 };
 
 </script>

@@ -108,8 +108,8 @@ async function login() {
     
     try {
         var response = await post("login", request);
-        router.push("/chat");
         setUserInfo(response);
+        router.push("/chat");
     } catch {
         alert("[ERRROR] 서버가 실행중이 아닙니다.");
         return;

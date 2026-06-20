@@ -1,7 +1,7 @@
 <template>
     <div
         class="fixed inset-0"
-        @click="$emit('close')"
+        @click="closeUserPopup"
     >
         <div
             class="fixed z-50 w-40 rounded-lg bg-slate-700 shadow-lg p-2"
@@ -12,7 +12,7 @@
             @click.stop
         >
             <div class="px-3 py-2 font-bold">
-                {{ props.userName }}
+                {{ user.userName }}
             </div>
 
             <button
@@ -21,9 +21,10 @@
             >
                 정보 보기
             </button>
-            <UserInfoPopupView v-if="isUserInfoOpen" @click="closeUserInfo" :props="userInfoProps"></UserInfoPopupView>
+            <UserInfoPopupView v-if="isUserInfoOpen" :props="userInfoProps" @close-user-info="closeUserInfo"></UserInfoPopupView>
 
             <button
+                @click="clickWhisper(user)"
                 class="w-full text-left px-3 py-2 hover:bg-slate-600 rounded"
             >
                 귓속말하기
@@ -49,10 +50,19 @@ import { ref } from 'vue';
 
 const isUserInfoOpen = ref(false);
 const userInfoProps = ref({});
+const emit = defineEmits([
+    'clickWhisper',
+    'closeUserPopup'
+]);
 
 const { props } = defineProps({
     props : Object
 });
+
+const user = {
+    userId   : props.userId,
+    userName : props.userName
+};
 
 function openUserInfo() {
     userInfoProps.value = {
@@ -63,7 +73,15 @@ function openUserInfo() {
     isUserInfoOpen.value = true;
 };
 
+function closeUserPopup() {
+    emit("closeUserPopup");
+};
+
 function closeUserInfo() {
     isUserInfoOpen.value = false;
-}
+};
+
+function clickWhisper(user) {
+    emit("clickWhisper", user);
+};
 </script>
