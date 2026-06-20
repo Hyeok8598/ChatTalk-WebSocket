@@ -1,6 +1,5 @@
 ﻿
 using ChatTalk.WebServer.Data.Dapper.Dto;
-using ChatTalk.WebServer.Data.Dapper.Entities;
 using ChatTalk.WebServer.Data.Dapper.Repository;
 
 namespace ChatTalk.WebServer.Data.EfCore.Service

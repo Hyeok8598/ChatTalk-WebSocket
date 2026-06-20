@@ -25,21 +25,5 @@ public class WebSocketServer
 	public async Task AcceptAsync(HttpContext httpContext)
 	{
 		await _webSocketAcceptService.AccecptAsync(httpContext);
-  //      Console.WriteLine("[Connected] : WebSocket opened");
-  //var handler = new WebSocketHandler(this, webSocket);
-
-        //try
-        //{
-        //	while(webSocket.State == WebSocketState.Open)
-        //	{
-        //		await handler.RunAsync();
-        //	}
-        //}
-        //catch (Exception ex)
-        //{
-        //	Console.WriteLine($"[Error] : {ex.Message}");
-        //}
-
-        //      Console.WriteLine("[Disconnected] WebSocket closed");
     }
 }

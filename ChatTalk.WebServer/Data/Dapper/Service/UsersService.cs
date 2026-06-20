@@ -1,5 +1,4 @@
 ﻿using ChatTalk.WebServer.Data.Dapper.Dto;
-using ChatTalk.WebServer.Data.Dapper.Entities;
 using ChatTalk.WebServer.Data.Dapper.Repositoy;
 
 namespace ChatTalk.WebServer.Data.Dapper.Service
@@ -13,7 +12,7 @@ namespace ChatTalk.WebServer.Data.Dapper.Service
             _usersRepository = usersRepository;
         }
 
-        public async Task<UsersEntity?> SelectOne001(UsersDto dto)
+        public async Task<UsersDto?> SelectOne001(UsersDto dto)
         {
             //if(string.IsNullOrWhiteSpace(userId)) return null;
 
