@@ -38,33 +38,37 @@
                 </div>
 
                 <div>
-                    {{ userId }}
+                    {{ userInfo.userId }}
                 </div>
 
             </header>
 
             <section class="flex-1 p-6 overflow-y-auto bg-slate-900">
                 <div
-                    v-for="message in messages"
-                    :key="message.messageId"
+                    v-for="msg in msgs"
+                    :key="msg.messageId"
                     class="mb-3 flex"
-                    :class="message.direction == MESSAGE_DIRECTION.SENT ? 'justify-end' : 'justify-start'"
+                    :class="msg.direction == MESSAGE_DIRECTION.SENT ? 'justify-end' : 'justify-start'"
                 >
                     <div
                         class="max-w-md rounded-xl px-4 py-3"
                         :class="[
-                            message.direction == MESSAGE_DIRECTION.SENT ? 'bg-violet-500' : 'bg-slate-700',
+                            msg.direction == MESSAGE_DIRECTION.SENT ? 'bg-violet-500' : 'bg-slate-700',
 
-                            message.isWhisper ? 'bg-slate-800 border boreder-violet-400' : ''
+                            msg.isWhisper ? 'bg-slate-800 border border-violet-400' : ''
                         ]"
                     >
                         <div 
-                            v-if="message.isWhisper"
+                            v-if="msg.isWhisper"
                             class="mb-1 text-xs text-violet-300"
                         >
                             🔒 귓속말
+                            {{ 
+                                msg.direction == MESSAGE_DIRECTION.SENT ?
+                                "[to. " + msg.senderUserName + "]" : "[from. " + msg.targetUserName + "]"
+                            }}
                         </div>
-                        {{ message.content }}
+                        {{ msg.content }}
                     </div>
                 </div>
             </section>
@@ -114,28 +118,29 @@
                 >
                     <MentionTag
                         v-if="mentionUser"
+                        :props="mentionTagProps"
                         :user-name="mentionUser.userName"
                     />
                     <WhisperTag
                         v-if="whisperUser"
+                        :props="whisperTagProps"
                         :user-name="whisperUser.userName"
                     />
 
                     <input
-                        ref="messageInput"
-                        v-model="message"
+                        ref="msgContentInput"
+                        v-model="msgContent"
                         class="
                             flex-1
                             bg-transparent
                             outline-none
                             text-white
                         "
-                        @input="onInput"
-                        @keydown="onKeydown"
+                        @input="onMsgContentInput"
+                        @keydown="onMsgContentKeydown"
                     />
                 </div>
 
-                <!-- @click="selectMention(user)"? -->
                 <UserPickerPopupVue v-if="isUserPickerOpen" :props="userPickerProps" @select="selectUser"/>
 
                 <button
@@ -164,12 +169,12 @@
 
             <div v-for="user in userList" class="space-y-1">
                 <div @click="openUserPopup($event, user)" class="rounded-lg px-3 py-2 hover:bg-slate-700">{{ user.userName }}</div>
-                <UserPopupVue v-if="isUserMenuOpen" @close="closeUserPopup" :props="userPopupProps"></UserPopupVue>
             </div>
+            <UserPopupVue v-if="isUserMenuOpen" @close-user-popup="closeUserPopup" @click-whisper="clickWhisper" :props="userPopupProps"></UserPopupVue>
 
             <footer>
                 <button
-                    @click="openSetting" 
+                    @click="openSettingPopup" 
                     class="fixed bottom-6 right-6 w-12 h-12 rounded-full bg-slate-700 hover:bg-slate-600 flex items-center justify-center shadow-lg transition"
                 >
                     ⚙️
@@ -178,8 +183,8 @@
                     v-if="isSettingOpen || isMyInfoOpen"
                     class="fixed inset-0 bg-black/50 flex justify-center items-center"
                 >
-                    <SettingPopupVue v-if="isSettingOpen" @close="closeSetting" @open-my-info="openMyInfo"></SettingPopupVue>
-                    <MyInfoPopupVue v-if="isMyInfoOpen" @close="closeMyInfo"></MyInfoPopupVue>                    
+                    <SettingPopupVue v-if="isSettingOpen" @close="closeSettingPopup" @open-my-info="openMyInfoPopup"></SettingPopupVue>
+                    <MyInfoPopupVue v-if="isMyInfoOpen" @close="closeMyInfoPopup"></MyInfoPopupVue>                    
                 </div>
             </footer>
             
@@ -189,8 +194,21 @@
 </template>
 
 <script setup>
-import { nextTick, reactive, ref } from "vue";
-import { getUserInfo, MESSAGE_DIRECTION, SERVER } from "../util/common";
+
+/**
+ * ======================================================================
+ *  1. Variable
+ *  2. Lifecycle
+ *  3. Event
+ *  4. WebSocket
+ *  5. Business
+ *  6. Util
+ *  7. Popup
+ * ======================================================================
+ */
+
+import { nextTick, onMounted, onUnmounted, reactive, ref } from "vue";
+import { getUserInfo, INPUT_MESSAGE_MODE, MESSAGE_DIRECTION, SERVER } from "../util/common";
 import { useRouter } from "vue-router";
 import MyInfoPopupVue from "./popup/MyInfoPopup.vue";
 import SettingPopupVue from "./popup/SettingPopup.vue";
@@ -198,156 +216,261 @@ import UserPopupVue from "./popup/UserPopup.vue";
 import UserPickerPopupVue from "./popup/UserPickerPopup.vue";
 import MentionTag from "../components/MentionTag.vue";
 import WhisperTag from "../components/WhisperTag.vue";
+import { userChatSocket } from "../composables/userChatSocket.js";
+import { userChatMessage } from "../composables/userChatMessage.js";
 
-const userId = getUserInfo().userId;
-const status = ref('연결중...');
-const message = ref('');
-const userList = ref([]);
-const messages = ref([]);
-const messageIds = new Set();
+/**
+ * ======================================================================
+ *  1. Variable
+ * ======================================================================
+ */
+
+const userInfo = getUserInfo();
 const router = useRouter();
+
+/**
+ * Component
+ */
+const msgContentInput = ref();
+
+/**
+ * State
+ */
+const msgContent = ref("");
+const userList = ref([]);
+const filterUsers = ref([]);
+const selectedUser = ref(null);
+const mentionUser = ref(null);
+const whisperUser = ref(null);
+const inputModeState = ref({
+    mode     : INPUT_MESSAGE_MODE.NONE,
+    keyword  : ""
+});
+
+/**
+ * Popup
+ */
 const isSettingOpen = ref(false);
 const isMyInfoOpen = ref(false);
 const isUserMenuOpen = ref(false);
-const selectedUser = ref(null);
-const userPopupProps = ref({ x: 0, y: 0});
-const userPickerProps = ref({});
 const isUserPickerOpen = ref(false);
-const filterUsers = ref([]);
-const messageInput = ref(null);
-const mentionUser = ref(null);
-const whisperUser = ref(null);
-const metionTag = ref(null);
+const userPopupProps = ref(null);
+const userPickerProps = ref(null);
+const mentionTagProps = ref(null);
+const whisperTagProps = ref(null);
 
-const InputMode = {
-    NONE    : "NONE",
-    MENTION : "MENTION",
-    WHISPER : "WHISPER"
-};
+/**
+ * Composable
+ */
+const {
+    status, connect, send, close
+} = userChatSocket();
 
-const inputModeState = ref({
-    mode: InputMode.NONE,
-    keyword: ""
+const {
+    msgs, receiveMessage, sendMessage, sendWhisperMessage
+} = userChatMessage({userInfo, send});
+
+/**
+ * ======================================================================
+ *  2. Lifecycle
+ * ======================================================================
+ */
+
+onMounted(() => {
+    connect({
+        userId    : userInfo.userId,
+        onMessage : handleSocketMessage
+    });
 });
 
-var socket = null;
-connectSocket();
+onUnmounted(() => {
+    close();
+});
+
+/**
+ * ======================================================================
+ *  3. Event
+ * ======================================================================
+ */
 
 async function clickSendButton() {
-    if(inputModeState.value.mode == InputMode.WHISPER) {
-        await sendWhisperMessage(message.value);
-    } else {
-        await sendMessage(message.value);
+    if(inputModeState.value.mode === INPUT_MESSAGE_MODE.WHISPER) {
+        await sendWhisperMessage(msgContent.value, whisperTagProps.value);
+        clearMessage();
+        return;
+    } 
+
+    else {
+        await sendMessage(msgContent.value);
+        clearMessage();
+        mentionUser.value = null;
+        resetInputModeState();
+
+        return;
     }
-    clearMessageInput();
 };
 
-function connectSocket() {
-    socket = new WebSocket(SERVER.CHAT_WS);
-    
-    socket.onopen = () => openSocket();
-    socket.onclose = () => closeSocket();
-    socket.onmessage = (event) => receiveMessage(event);
+function onMsgContentInput() {
+    const text = msgContent.value;
+    openMentionMenu(text);
+    openWhisperMenu(text);
 };
 
-function openSocket() {
-    status.value = "접속됨";
+function onMsgContentKeydown(event) {
+    const cursorPosition = event.target.selectionStart;
 
-    const data = {
-        type   : "JOIN",
-        userId : userId
-    };
-    
-    socket.send(JSON.stringify(data));
+    if(event.key === "Backspace") {
+        if(cursorPosition === 0) {
+            mentionUser.value = null;
+            whisperUser.value = null;
+            whisperTagProps.value = null;
+            resetInputModeState();
+        }
+
+        closeUserPickerPopup();
+    }
+
+    if(event.key === "Enter") {
+        clickSendButton();
+    }
 };
 
-function closeSocket() {
-    status.value = "연결 종료";
-};
+/**
+ * ======================================================================
+ *  4. Business
+ * ======================================================================
+ */
 
-function receiveMessage(event) {
+function handleSocketMessage(event) {
     const data = JSON.parse(event.data);
-    console.log("서버 메시지:", data);
-
-    if(data.type == "MSG") {
-        if(messageIds.has(data.messageId)) return;
-        addMessage(data, MESSAGE_DIRECTION.RECEIVE);
-    } else if(data.type == "USRLIST") {
+    
+    if(data.type === "USRLIST") {
         refreshUserList(data);
-    } else if(data.type == "WHISPER") {
-        if(messageIds.has(data.messageId)) return;
-        addMessage(data, MESSAGE_DIRECTION.RECEIVE, true);
+    } else {
+        receiveMessage(data);
     }
 };
 
-function sendMessage(message) {
-    const messageId = crypto.randomUUID();
+function openMentionMenu(text) {
+    const mentionMatch = text.match(/@([^\s@]*)$/);
 
-    const data = {
-        type      : "MSG",
-        sender    : getUserInfo().userId,
-        content   : message,
-        messageId : messageId
+    if(!mentionMatch) return;
+    if(mentionUser.value || whisperTagProps.value) return;
+
+    inputModeState.value = {
+        mode : INPUT_MESSAGE_MODE.MENTION,
+        keyword : mentionMatch[1]
     };
 
-    messageIds.add(messageId, MESSAGE_DIRECTION.SENT);
-    addMessage(data, MESSAGE_DIRECTION.SENT);
-    socket.send(JSON.stringify(data));
-};
+    filterUsers.value = userList.value.filter(
+        user => user.userName?.includes(inputModeState.value.keyword)
+    );
 
-function sendWhisperMessage(message) {
-    const messageId = crypto.randomUUID();
+    const rect = msgContentInput.value.getBoundingClientRect();
 
-    const data = {
-          type      : "WHISPER"
-        , sender    : getUserInfo().userId
-        , target    : whisperUser.value.userId
-        , content   : message
+    userPickerProps.value = {
+        users : filterUsers.value,
+        left  : rect.left,
+        top   : rect.top - 80
     };
 
-    messageIds.add(messageId, MESSAGE_DIRECTION.SENT);
-    addMessage(data, MESSAGE_DIRECTION.SENT, inputModeState.value.mode == InputMode.WHISPER);
-    socket.send(JSON.stringify(data));
+    showUserPickerPopup();
 };
 
-// function sendLeaveMessage() {
-//     const data = {
-//           type     : "LEAVE"
-//         , userName :
-//     };
-// };
+function openWhisperMenu(text) {
+    const whisperMatch = text.match(/\/w([^\s]*)$/);
+
+    if(!whisperMatch) return;
+    if(mentionUser.value || whisperTagProps.value) return;
+
+    inputModeState.value = {
+        mode : INPUT_MESSAGE_MODE.WHISPER,
+        keyword : whisperMatch[1]
+    };
+
+    filterUsers.value = userList.value.filter(
+        user => user.userName?.includes(inputModeState.value.keyword)
+    );
+
+    const rect = msgContentInput.value.getBoundingClientRect();
+
+    userPickerProps.value = {
+        users : filterUsers.value,
+        left  : rect.left,
+        top   : rect.top - 80
+    };
+
+    showUserPickerPopup();
+};
 
 function refreshUserList(data) {
     userList.value = data.users;
 };
 
-function addMessage(data, messageDirection, isWhisper=false) {
-    messages.value.push({
-        messageId : data.messageId,
-        direction : messageDirection,
-        content   : data.content,
-        isWhisper : isWhisper
-    });
+async function selectUser(user) {
+    if(inputModeState.value.mode === INPUT_MESSAGE_MODE.MENTION) {
+        mentionUser.value = user;
+    } else if(inputModeState.value.mode === INPUT_MESSAGE_MODE.WHISPER) {
+        whisperUser.value = user;
+
+        whisperTagProps.value = {
+            userId   : user.userId,
+            userName : user.userName
+        };
+    }
+
+    isUserPickerOpen.value = false;
+    await nextTick();
+    msgContentInput.value.focus();
+    msgContent.value = "";
 };
 
-function login() {
-    router.replace("/");
+function clickWhisper(user) {
+    inputModeState.value = {
+        mode    : INPUT_MESSAGE_MODE.WHISPER,
+        keyword : user.userId
+    };
+
+    whisperUser.value = user;
+
+    whisperTagProps.value = {
+        userId   : user.userId,
+        userName : user.userName
+    };
+    closeUserPopup();
 };
 
-function openSetting() {
+function clearMessage() {
+    msgContent.value = "";
+};
+
+function resetInputModeState() {
+    inputModeState.value = {
+        mode    : INPUT_MESSAGE_MODE.NONE,
+        keyword : ""
+    };
+};
+
+/**
+ * ======================================================================
+ *  7. Popup
+ * ======================================================================
+ */
+
+function openSettingPopup() {
     isSettingOpen.value = true;
 };
 
-function closeSetting() {
+function closeSettingPopup() {
     isSettingOpen.value = false;
 };
 
-function openMyInfo() {
+function openMyInfoPopup() {
     isSettingOpen.value = false;
     isMyInfoOpen.value = true;
 };
 
-function closeMyInfo() {
+function closeMyInfoPopup() {
     isSettingOpen.value = true;
     isMyInfoOpen.value = false
 };
@@ -369,100 +492,22 @@ function closeUserPopup() {
     isUserMenuOpen.value = false;
 };
 
-function showMentionPopup() {
+function showUserPickerPopup() {
     isUserPickerOpen.value = true;
 };
 
-function closeMentionPopup() {
+function closeUserPickerPopup() {
     isUserPickerOpen.value = false;
 };
 
-function onInput() {
-    const text = message.value;
-    inputModeState.value = checkInputMode(text);
+/**
+ * ======================================================================
+ *  8. Router
+ * ======================================================================
+ */
 
-    if(inputModeState.value.mode === InputMode.NONE) {
-        isUserPickerOpen.value = false;
-        return;
-    }
-
-    filterUsers.value = userList.value.filter(
-        user => user.userName?.includes(inputModeState.value.keyword)
-    );
-
-    const rect = messageInput.value.getBoundingClientRect();
-
-    userPickerProps.value = {
-        users : filterUsers.value,
-        left  : rect.left,
-        top   : rect.top - 80
-    };
-
-    showMentionPopup();
+function login() {
+    router.replace("/");
 };
 
-function onKeydown(event) {
-    if(event.key === "Backspace" && message.value.length === 0 && mentionUser.value) mentionUser.value = "";
-    if(event.key === "Backspace" && message.value.length === 0 && whisperUser.value) whisperUser.value = "";
-    if(event.key === "Enter") clickSendButton();
-};
-
-async function selectUser(user) {
-    if(inputModeState.value.mode === InputMode.MENTION) {
-        mentionUser.value = user;
-    } else if(inputModeState.value.mode === InputMode.WHISPER) {
-        whisperUser.value = user;
-    }
-    
-    isUserPickerOpen.value = false;
-    await nextTick();
-    messageInput.value.focus();
-    message.value = "";
-};
-
-function clearMessageInput() {
-    mentionUser.value = null;
-    message.value = "";
-
-    if(inputModeState.value.mode !== InputMode.WHISPER) {
-        inputModeState.value = {
-            mode: InputMode.NONE,
-            keyword: ""
-        };
-
-        mentionUser.value = null;
-        whisperUser.value = null;
-    }
-};
-
-function checkInputMode(text) {
-    if(mentionUser.value) {
-
-    }
-
-    if(whisperUser.value) {
-        return inputModeState.value;
-    }
-
-    const mentionMatch = text.match(/@([^\s@]*)$/);
-    if(mentionMatch) {
-        return {
-            mode : InputMode.MENTION,
-            keyword : mentionMatch[1]
-        };
-    }
-
-    const whisperMatch = text.match(/\/w([^\s]*)$/);
-    if(whisperMatch) {
-        return {
-            mode : InputMode.WHISPER,
-            keyword : whisperMatch[1]
-        };
-    }
-
-    return {
-        mode : InputMode.NONE,
-        keyword : ""
-    }
-};
 </script>

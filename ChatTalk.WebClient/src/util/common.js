@@ -1,15 +1,29 @@
 export const MESSAGE_DIRECTION = {
+    NONE    : "none",
     SENT    : "sent",
     RECEIVE : "receive",
     SYSTEM  : "system"
 };
 
-export const SERVER = {
-    AUTH_API : "http://localhost:8080",
-    CHAT_WS  : "http://localhost:5174/ws"
+export const INPUT_MESSAGE_MODE = {
+    NONE    : "NONE",
+    MESSAGE : "MESSAGE",
+    MENTION : "MENTION",
+    WHISPER : "WHISPER"
 };
 
-const AUTH_API_URL = SERVER.AUTH_API + "/api/users/";
+export const SERVER = {
+    // 개발서버
+    AUTH_API : "http://localhost:8080",
+    CHAT_WS  : "http://localhost:5174/ws"
+
+    // 운영서버
+    // AUTH_API : "https://api.soonhlab.com",
+    // CHAT_WS  : "ws://soonhlab.com:5000/ws" 26.06.18 - Cloudflare 적용으로 인해 사용X
+    // CHAT_WS  : "wss://ws.soonhlab.com/ws"
+};
+
+const AUTH_API_URL = SERVER.AUTH_API + "/users/";
 
 async function request(url, options={}) {
     const response = await fetch(AUTH_API_URL + url, {
@@ -53,6 +67,6 @@ export function getUserInfo() {
     if(!value) {
         return null;
     }
-
+    
     return JSON.parse(value);
 };
