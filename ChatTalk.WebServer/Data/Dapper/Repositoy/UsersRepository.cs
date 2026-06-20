@@ -1,9 +1,7 @@
-﻿using ChatTalk.WebServer.Data.Dapper.Dto;
-using ChatTalk.WebServer.Data.Dapper.Entities;
+﻿using ChatTalk.Common.Log;
+using ChatTalk.WebServer.Data.Dapper.Dto;
 using ChatTalk.WebServer.Data.Dapper.Sql;
-using ChatTalk.Common;
 using Dapper;
-using ChatTalk.Common.Log;
 
 namespace ChatTalk.WebServer.Data.Dapper.Repositoy
 {
@@ -18,12 +16,13 @@ namespace ChatTalk.WebServer.Data.Dapper.Repositoy
             _logger = logger;
         }
 
-        public async Task<UsersEntity?> SelectOne001(UsersDto dto)
+        public async Task<UsersDto?> SelectOne001(UsersDto dto)
         {
             var sql = UsersSql.SELECT_ONE_001;
             _logger.LogInformation(SqlLogger.Format(sql, dto));
 
             var conn = _factory.CreateConnection();
-            return await conn.QuerySingleOrDefaultAsync<UsersEntity>(sql, dto);
+            return await conn.QuerySingleOrDefaultAsync<UsersDto>(sql, dto);
         }
-}}
+    }
+}

@@ -1,11 +1,4 @@
 ﻿using ChatTalk.Common.Protocol.Messages;
-using ChatTalk.Common.Protocol.Model;
-using ChatTalk.Common.Protocol.Serialization;
-using ChatTalk.WebServer.Data.Dapper.Dto;
-using ChatTalk.WebServer.Data.Dapper.Entities;
-using Microsoft.AspNetCore.Hosting.Server;
-using System.Text;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace ChatTalk.WebServer.Network.Service
 {

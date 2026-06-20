@@ -1,6 +1,5 @@
 ﻿using ChatTalk.Common.Protocol.Messages;
 using ChatTalk.WebServer.Data.Dapper.Dto;
-using ChatTalk.WebServer.Data.Dapper.Entities;
 using ChatTalk.WebServer.Data.Dapper.Service;
 
 namespace ChatTalk.WebServer.Network.Service
@@ -24,21 +23,21 @@ namespace ChatTalk.WebServer.Network.Service
         {
             JoinMessage joinMessage = (JoinMessage)baseMassage;
 
-            UsersDto usersDto = new UsersDto { UserId = joinMessage.UserId };
-            UsersEntity? user = await _usersService.SelectOne001(usersDto);
+            UsersDto userInputDto = new UsersDto { UserId = joinMessage.UserId };
+            UsersDto? userOutDto = await _usersService.SelectOne001(userInputDto);
 
-            if (user == null)
+            if (userOutDto == null)
             {
                 _logger.LogWarning(
                     "[USER NOT FOUND] UserId={UserId}",
-                    usersDto.UserId
+                    userInputDto.UserId
                 );
 
                 return;
             }
 
-            handler.UserInfo.SetUserName(user.UserName);
-            handler.UserInfo.SetUserId(user.UserId);
+            handler.UserInfo.SetUserName(userOutDto.UserName);
+            handler.UserInfo.SetUserId(userOutDto.UserId);
             _clientManager.Add(handler.GetConnectId(), handler);
 
             await _sendService.BroadcastAsync(new UserListMessage
