@@ -1,7 +1,5 @@
 ﻿using ChatTalk.Common.Log;
 using ChatTalk.WebServer.Data.Dapper.Dto;
-using ChatTalk.WebServer.Data.Dapper.Entities;
-using ChatTalk.WebServer.Data.Dapper.Repositoy;
 using ChatTalk.WebServer.Data.Dapper.Sql;
 using Dapper;
 
@@ -24,7 +22,7 @@ namespace ChatTalk.WebServer.Data.Dapper.Repository
             _logger.LogInformation(SqlLogger.Format(sql, dto));
 
             var conn = _factory.CreateConnection();
-            await conn.QuerySingleOrDefaultAsync<ChatMessageEntity>(ChatMessageSql.INSERT_001, dto);
+            await conn.QuerySingleOrDefaultAsync<ChatMessageDto>(sql, dto);
         }
     }
 }

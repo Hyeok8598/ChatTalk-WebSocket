@@ -4,18 +4,18 @@
 
 <mapper namespace="com.chattalk.auth.mapper.UsersMapper">
     <select id="usersSelectOne001">
-        SELECT USER_ID
-             , USER_NAME
-             , PASSWORD
+        SELECT USER_ID   AS "userId"
+             , USER_NAME AS "userName"
+             , PASSWORD  AS "password"
           FROM USERS
          WHERE 1=1
            AND USER_ID = #{userId}
     </select>
 
     <select id="usersSelectOne002">
-        SELECT USER_ID
-             , USER_NAME
-          FROM USERS
+        SELECT USER_ID   AS "userId"
+             , USER_NAME AS "userName"
+          FROM USERS     AS "users"
          WHERE 1=1
            AND USER_ID = #{userId}
     </select>
