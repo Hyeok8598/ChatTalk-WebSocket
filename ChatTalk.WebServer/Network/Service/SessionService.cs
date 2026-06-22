@@ -23,7 +23,7 @@ namespace ChatTalk.WebServer.Network.Service
         {
             JoinMessage joinMessage = (JoinMessage)baseMassage;
 
-            UsersDto userInputDto = new UsersDto { UserId = joinMessage.UserId };
+            UsersDto userInputDto = new UsersDto { UserId = joinMessage.SenderUserId };
             UsersDto? userOutDto = await _usersService.SelectOne001(userInputDto);
 
             if (userOutDto == null)
@@ -46,6 +46,44 @@ namespace ChatTalk.WebServer.Network.Service
             });
 
             return;
+        }
+
+        public async Task LeaveAsync(WebSocketHandler handler, BaseMessage baseMassage)
+        {
+            LeaveMessage leaveMessage = (LeaveMessage)baseMassage;
+
+            UsersDto userInputDto = new UsersDto { UserId = leaveMessage.SenderUserId };
+            UsersDto? userOutDto = await _usersService.SelectOne001(userInputDto);
+
+            if (userOutDto == null)
+            {
+                _logger.LogWarning(
+                    "[USER NOT FOUND] UserId={UserId}",
+                    userInputDto.UserId
+                );
+
+                return;
+            }
+
+            _clientManager.Remove(handler.GetConnectId());
+            await _sendService.BroadcastAsync(new UserListMessage
+            {
+                Users = _clientManager.GetAllUserInfo()
+            });
+
+            await handler.CloseAsync();
+
+            return;
+        }
+        
+        public async Task DisconnectAsync(WebSocketHandler handler)
+        {
+            _clientManager.Remove(handler.GetConnectId());
+            await _sendService.BroadcastAsync(new UserListMessage
+            {
+                Users = _clientManager.GetAllUserInfo()
+            });
+            await handler.CloseAsync();
         }
     }
 }

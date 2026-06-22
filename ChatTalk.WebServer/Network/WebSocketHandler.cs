@@ -18,18 +18,23 @@ namespace ChatTalk.WebServer.Network
             _webSocket = webSocket;
         }
 
-        //public async Task CloseAsync(ReceiveResult receive)
-        //{
-        //    /* WebSocketServer 책임이므로 추후 해당 코드는 변경되야함 */
-        //    Console.WriteLine($"[Close] : {receive.Result.CloseStatus} - {receive.Result.CloseStatusDescription}");
-        //    //await _webSocket.CloseAsync(receive.Result.CloseStatus ?? WebSocketCloseStatus.NormalClosure, receive.Result.CloseStatusDescription, CancellationToken.None);
-        //}
-
         public async Task SendAsync(BaseMessage baseMessage)
         {
             string sendJson = MessageSerializer.Serialize(baseMessage);
             byte[] sendBytes = Encoding.UTF8.GetBytes(sendJson);
             await _webSocket.SendAsync(new ArraySegment<byte>(sendBytes), WebSocketMessageType.Text, true, CancellationToken.None);
+        }
+
+        public async Task CloseAsync()
+        {
+            if(_webSocket.State == WebSocketState.Open)
+            {
+                await _webSocket.CloseAsync(
+                    WebSocketCloseStatus.NormalClosure,
+                    "Closed",
+                    CancellationToken.None
+                );
+            }
         }
 
         public string GetConnectId()
