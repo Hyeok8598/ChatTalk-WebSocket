@@ -12,8 +12,8 @@ export function userChatSocket() {
             status.value = "접속됨";
 
             let data = {
-                type   : "JOIN",
-                userId : userId
+                type         : "JOIN",
+                SenderUserId : userId
             };
         
             send(data);
