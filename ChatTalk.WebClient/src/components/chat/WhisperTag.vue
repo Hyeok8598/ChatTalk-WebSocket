@@ -3,11 +3,11 @@
         contenteditable="false"
         class="inline-flex items-center px-2 py-0.5 rounded-md border border-blue-500/20 text-blue-300 text-sm font-medium"
     >
-        👂{{ props.userName }}
+        👂{{ whisperUserName }}
     </span>
 </template>
 <script setup>
-const { props } = defineProps({
-    props : Object
+const props = defineProps({
+    whisperUserName : String
 });
 </script>
