@@ -8,19 +8,22 @@ namespace ChatTalk.WebServer.Network.Service
         private readonly SessionService _sessionService;
         private readonly MessageService _messageService;
         private readonly WhisperService _whisperService;
+        private readonly SystemService _systemService;
 
         public MessageDispatcherService(
             ILogger<MessageDispatcherService> logger,
             SessionService sessionService,
             MessageService messageService,
-            WhisperService whisperService
+            WhisperService whisperService,
+            SystemService systemService
         )
             
         {
             _logger = logger;
-            _sessionService = sessionService;
-            _messageService = messageService;
-            _whisperService = whisperService;
+            _sessionService  = sessionService;
+            _messageService  = messageService;
+            _whisperService  = whisperService;
+            _systemService   = systemService;
         }
 
         public async Task DispatcherAsync(WebSocketHandler handler, BaseMessage baseMessage)
@@ -33,11 +36,13 @@ namespace ChatTalk.WebServer.Network.Service
             if (baseMessage is JoinMessage joinMessage)
             {
                 await _sessionService.JoinAsync(handler, baseMessage);
+                await _systemService.SendJoinAsync(handler, joinMessage);
             }
 
             if (baseMessage is LeaveMessage leaveMessage)
             {
-                //await _sessionService.JoinAsync(handler, baseMessage);
+                await _systemService.SendLeaveAsync(handler, leaveMessage);
+                await _sessionService.LeaveAsync(handler, baseMessage);
             }
 
             if (baseMessage is WhisperMessage whisperMessage)

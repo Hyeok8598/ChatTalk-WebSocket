@@ -32,6 +32,7 @@ builder.Services.AddScoped<WebSocketAcceptService>();
 builder.Services.AddScoped<WebSocketReceiveService>();
 builder.Services.AddScoped<WebSocketSendService>();
 builder.Services.AddScoped<WhisperService>();
+builder.Services.AddScoped<SystemService>();
 
 var app = builder.Build();
 
