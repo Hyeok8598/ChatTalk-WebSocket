@@ -55,6 +55,8 @@ export function get(url) {
 };
 
 export function setUserInfo(userInfo) {
+    userInfo.userInitial = userInfo.userName[0];
+    
     sessionStorage.setItem(
         "USER_INFO",
         JSON.stringify(userInfo)

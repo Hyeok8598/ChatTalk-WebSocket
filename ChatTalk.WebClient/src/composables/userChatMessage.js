@@ -8,17 +8,30 @@ export function userChatMessage({ userInfo, send }) {
     function receiveMessage(data) {
         console.info("서버 메시지:", data);
 
-        if(data.type == "MSG") {
+        if(data.type === "MSG") {
             if(messageIds.has(data.messageId)) return;
             addMessage(data, MESSAGE_DIRECTION.RECEIVE);
             return;
         }
         
-        if(data.type == "WHISPER") {
+        if(data.type === "WHISPER") {
             if(messageIds.has(data.messageId)) return;
             addMessage(data, MESSAGE_DIRECTION.RECEIVE, true);
             return;
         }
+
+        // if(data.type === "SYSTEM") {
+        //     if(data.systemType === "JOIN") {
+        //         // 입장 유저 출력
+        //         console.log("[SYSTEM] 입장", data);
+        //     }
+
+        //     if(data.systemType === "LEAVE") {
+        //         // 퇴장 유저 출력
+        //         console.log("[SYSTEM] 퇴장", data);
+        //         console.log(data);
+        //     }
+        // }
     }
 
     function sendMessage(message) {
@@ -28,7 +41,6 @@ export function userChatMessage({ userInfo, send }) {
             type           : "MSG",
             messageId,
             senderUserId   : userInfo.userId,
-            senderUserName : userInfo.userName,
             content        : message
         };
 
@@ -57,6 +69,19 @@ export function userChatMessage({ userInfo, send }) {
         send(data);
     };
 
+    function sendLeaveMessage() {
+        const messageId = crypto.randomUUID();
+
+        const data = {
+            type     : "LEAVE",
+            messageId,
+            senderUserId   : userInfo.userId
+        };
+        messageIds.add(messageId);
+        
+        send(data);
+    };
+
     function addMessage(data, messageDirection, isWhisper=false) {
         msgs.value.push({
             messageId      : data.messageId,
@@ -70,17 +95,11 @@ export function userChatMessage({ userInfo, send }) {
         });
     };
 
-    // function sendLeaveMessage() {
-    //     const data = {
-    //           type     : "LEAVE"
-    //         , userName :
-    //     };
-    // };
-
     return { 
         msgs,
         receiveMessage,
         sendMessage,
-        sendWhisperMessage
+        sendWhisperMessage,
+        sendLeaveMessage
     }
 };
