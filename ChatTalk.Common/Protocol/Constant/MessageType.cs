@@ -14,5 +14,6 @@ namespace ChatTalk.Common.Protocol.Constant
         public const string Join = "JOIN";
         public const string Leave = "LEAVE";
         public const string System = "SYSTEM";
+        public const string File = "FILE";
     }
 }
