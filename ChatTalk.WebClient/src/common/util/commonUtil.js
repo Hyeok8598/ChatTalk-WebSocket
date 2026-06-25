@@ -9,13 +9,15 @@ export const INPUT_MESSAGE_MODE = {
     NONE    : "NONE",
     MESSAGE : "MESSAGE",
     MENTION : "MENTION",
-    WHISPER : "WHISPER"
+    WHISPER : "WHISPER",
+    FILE    : "FILE"
 };
 
 export const SERVER = {
     // 개발서버
     AUTH_API : "http://localhost:8080",
-    CHAT_WS  : "http://localhost:5174/ws"
+    CHAT_WS  : "http://localhost:5174/ws",
+    FILE_API : "http://localhost:8080/file/"
 
     // 운영서버
     // AUTH_API : "https://api.soonhlab.com",

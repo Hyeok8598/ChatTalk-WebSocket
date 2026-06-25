@@ -114,7 +114,7 @@
 <script setup>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
-import { getUserInfo, post } from "../util/common.js";
+import { post } from "../../common/util/commonUtil";
 
 const router = useRouter();
 
@@ -137,7 +137,7 @@ async function signup() {
 
     } catch(error) {
         alert("회원가입 실패");
-        alert.error(error);
+        alert(error);
     }
 }
 </script>

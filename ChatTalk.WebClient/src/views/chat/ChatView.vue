@@ -17,6 +17,7 @@
             :input-mode-state="inputModeState"
             :whisper-user="whisperUser"
             :mention-user="mentionUser"
+            :file="file"
             
             @reset-input-mode-state="resetInputModeState"
             @update-user-list="updateUserList"
@@ -25,6 +26,8 @@
             @clear-whisper-user="clearWhisperUser"
             @update-input-mode-state="updateInputModeState"
             @update-whisper-user="updateWhisperUser"
+            @select-file="selectFile"
+            @remove-file="removeFile"
         />
 
         <ChatRightPanel
@@ -39,13 +42,11 @@
 </template>
 
 <script setup>
-
-
-import { getUserInfo, INPUT_MESSAGE_MODE } from '../../util/common.js';
-import { useRouter } from 'vue-router';
 import { ref } from 'vue';
-import ChatLeftPanel from '../../components/layout/ChatLeftPanel.vue';
+import { useRouter } from 'vue-router';
+import { getUserInfo, INPUT_MESSAGE_MODE } from '../../common/util/commonUtil.js';
 import ChatCenterPanel from '../../components/layout/ChatCenterPanel.vue';
+import ChatLeftPanel from '../../components/layout/ChatLeftPanel.vue';
 import ChatRightPanel from '../../components/layout/ChatRightPanel.vue';
 
 const router = useRouter();
@@ -55,6 +56,7 @@ const isSelectChatRoom = ref(false);
 const userList = ref([]);
 const whisperUser = ref(null);
 const mentionUser = ref(null);
+const file = ref(null);
 const inputModeState = ref({
     mode     : INPUT_MESSAGE_MODE.NONE,
     keyword  : ""
@@ -106,5 +108,14 @@ function updateInputModeState(mode, keyword) {
 
 function updateWhisperUser(user) {
     whisperUser.value = user;
+};
+
+function selectFile(data) {
+    file.value = data;
+    updateInputModeState(INPUT_MESSAGE_MODE.FILE, "");
+};
+
+function removeFile() {
+    file.value = null
 };
 </script>

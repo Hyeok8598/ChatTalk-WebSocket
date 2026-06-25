@@ -81,10 +81,10 @@
 
 <script setup>
 import { ref } from 'vue';
+import { INPUT_MESSAGE_MODE } from '../../common/util/commonUtil.js';
 import MyInfoPopup from '../popup/MyInfoPopup.vue';
 import SettingPopup from '../popup/SettingPopup.vue';
 import UserPopup from '../popup/UserPopup.vue';
-import { INPUT_MESSAGE_MODE } from '../../util/common.js';
 
 
 const selectedUser = ref(null);

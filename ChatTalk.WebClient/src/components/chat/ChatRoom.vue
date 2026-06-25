@@ -53,6 +53,33 @@
                             "[to. " + msg.targetUserName + "]" : "[from. " + msg.senderUserName + "]"
                         }}
                     </div>
+
+                    <div v-if="msg.type === 'FILE'">
+                        <div class="text-2xl">
+                            📄
+                        </div>
+                        <div class="flex-1">
+                            <div class="text-sm font-medium">
+                                {{ msg.originalName }}
+                            </div>
+
+                            <div class="text-xs text-gray-400">
+                                <!-- {{ formatSize(msg.fileSize) }} -->
+                            </div>
+                        </div>
+
+                        <button
+                            @click="downloadFile(msg)"
+                            class="
+                                px-2
+                                py-1
+                                text-xs
+                                rounded
+                                bg-violet-500
+                            "
+                        >
+                            다운로드</button>
+                    </div>
                     {{ msg.content }}
                 </div>
             </div>
@@ -60,26 +87,30 @@
 
         <footer
             class="
+                relative
                 h-20
-                border-t
-                border-slate-700
+                border-t border-slate-700
                 px-6
-                flex
-                items-center
-                gap-3
+                flex items-center gap-3
                 bg-slate-900
             ">
 
-            <button
+            <ChatAttachFilePriview
+                @remove-file="$emit('remove-file')"
                 class="
-                    w-12
-                    h-12
-                    rounded-xl
-                    bg-slate-700
-                    text-white
-                ">
-                +
-            </button>
+                    absolute
+                    left-16
+                    right-32
+                    bottom-20
+                "
+                :file="file"
+            />
+
+            <ChatInputActionButton
+                :input-state-mode="inputModeState"
+                :file="file"
+                @select-file="(data) => $emit('select-file', data)"
+            />
 
             <div
                 class="
@@ -94,6 +125,7 @@
                     gap-2
                 "
             >
+
                 <MentionTag
                     v-if="mentionUser"
                     :mention-user-name="mentionUserName"
@@ -102,7 +134,7 @@
                     v-if="whisperUser"
                     :whisper-user-name="whisperUserName"
                 />
-
+                
                 <input
                     ref="msgContentInput"
                     v-model="msgContent"
@@ -117,14 +149,6 @@
                 />
             </div>
 
-            <UserPickerPopup 
-                v-if="isUserPickerOpen" 
-                :users="users" 
-                :left="left" 
-                :top="top" 
-                @pick-user="pickUser"
-            />
-
             <button
                 @click="clickSendButton"
                 class="
@@ -134,23 +158,35 @@
                     bg-violet-500
                     text-white
                     font-bold"
+                    cursor-pointer
                 >
                 전송
             </button>
 
         </footer>
 
+        <UserPickerPopup 
+                v-if="isUserPickerOpen" 
+                :users="users" 
+                :left="left" 
+                :top="top" 
+                @pick-user="pickUser"
+            />
+
     </main>
 </template>
 
 <script setup>
+import axios from 'axios';
 import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
-import { getUserInfo, INPUT_MESSAGE_MODE, MESSAGE_DIRECTION } from '../../util/common.js';
+import { getUserInfo, INPUT_MESSAGE_MODE, MESSAGE_DIRECTION } from '../../common/util/commonUtil.js';
 import { userChatMessage } from '../../composables/userChatMessage.js';
 import { userChatSocket } from '../../composables/userChatSocket.js';
+import UserPickerPopup from '../popup/UserPickerPopup.vue';
+import ChatAttachFilePriview from './ChatAttachFilePriview.vue';
+import ChatInputActionButton from './ChatInputActionButton.vue';
 import MentionTag from './MentionTag.vue';
 import WhisperTag from './WhisperTag.vue';
-import UserPickerPopup from '../popup/UserPickerPopup.vue';
 
 const userInfo = getUserInfo();
 
@@ -184,15 +220,25 @@ const {
 } = userChatSocket();
 
 const {
-    msgs, receiveMessage, sendMessage, sendWhisperMessage, sendLeaveMessage
+    msgs, receiveMessage, sendMessage, sendWhisperMessage, sendLeaveMessage, sendFileMessage
 } = userChatMessage({userInfo, send});
 
 const props = defineProps({
+    file            : File,
     mode            : String,
-    userList        : Array,
     inputModeState  : Object,
-    whisperUser     : Object,
-    mentionUser     : Object
+    userList: {
+        type: Array,
+        default: () => []
+    },
+    whisperUser: {
+        type: Object,
+        default: null
+    },
+    mentionUser: {
+        type: Object,
+        default: null
+    }
 });
 
 const emit = defineEmits([
@@ -202,7 +248,9 @@ const emit = defineEmits([
     'update-input-mode-state',
     'clear-mention-user',
     'update-whisper-user',
-    'clear-whisper-user'
+    'clear-whisper-user',
+    'select-file',
+    'remove-file'
 ]);
 
 /**
@@ -241,9 +289,11 @@ watch(
         await sendWhisperMessage(msgContent.value, props.whisperUser);
         clearMessage();
         return;
-    } 
-
-    else {
+    } else if(props.inputModeState.mode === INPUT_MESSAGE_MODE.FILE) {
+        await sendFileMessage(props.file, "CHAT");
+        emit('reset-input-mode-state');
+        emit('remove-file');
+    } else {
         await sendMessage(msgContent.value);
         clearMessage();
         emit('clear-whisper-user')
@@ -368,6 +418,15 @@ function clearMessage() {
     msgContent.value = "";
 };
 
+function downloadFile(msg) {
+    const request = {
+        ...msg
+    };
+    console.log("## file ", props.file);
+    
+    downloadAttachFile(request);
+};
+
 /**
  * ======================================================================
  *  7. Popup
@@ -381,4 +440,45 @@ function showUserPickerPopup() {
 function closeUserPickerPopup() {
     isUserPickerOpen.value = false;
 };
+
+
+
+async function downloadFile11(request) {
+    const refType = request.refType;
+    const refId = request.refId;
+
+    const response = await axios.get(
+        `http://localhost:8080/file/download?refType=${refType}&refId=${refId}`, 
+        {
+            responseType: 'blob'
+        }
+    );
+
+    return response;
+};
+
+
+
+async function downloadAttachFile(request) {
+    const originalName = request.originalName;
+
+
+    const response = await downloadFile11(request);
+
+    const blob = new Blob([response.data], {
+        type: response.headers['content-type']
+    });
+
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = originalName || 'download';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+};
+
+
+
 </script>

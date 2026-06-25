@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from "vue-router";
 
 import LoginView from "../views/auth/LoginView.vue";
 // import ChatView from "../views/chat/ChatView.vue";
-// import signUpView from "../views/SignUpView.vue";
+import signUpView from "../views/auth/SignUpView.vue";
 // import MainView from "../views/MainView.vue";
 import ChatView from "../views/chat/ChatView.vue";
 
@@ -25,10 +25,10 @@ const router = createRouter({
             path: "/chat",
             component: ChatView
         },
-        // {
-        //     path: "/signUp",
-        //     component: signUpView
-        // },
+        {
+            path: "/signUp",
+            component: signUpView
+        },
     ]
 });
 
