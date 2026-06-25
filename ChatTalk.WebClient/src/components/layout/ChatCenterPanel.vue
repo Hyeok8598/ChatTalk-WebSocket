@@ -9,6 +9,7 @@
         :input-mode-state="inputModeState"
         :whisper-user="whisperUser"
         :mention-user="mentionUser"
+        :file="file"
 
         @reset-input-mode-state="$emit('reset-input-mode-state')"
         @update-user-list="(users) => $emit('update-user-list', users)"
@@ -17,6 +18,8 @@
         @clear-whisper-user="$emit('clear-whisper-user')"
         @update-whisper-user="(user) => $emit('update-whisper-user', user)"
         @update-input-mode-state="(mode, keyword) => $emit('update-input-mode-state', mode, keyword)"
+        @select-file="(data) => $emit('select-file', data)"
+        @remove-file="$emit('remove-file')"
     />
 </template>
 
@@ -26,6 +29,7 @@ import ChatMain from '../chat/ChatMain.vue';
 import ChatRoom from '../chat/ChatRoom.vue';
 
 const props  = defineProps({
+    file : File,
     mode : String,
     userList : Array,
     inputModeState : Object,
@@ -40,7 +44,9 @@ const emit = defineEmits([
     'update-input-mode-state',
     'clear-mention-user',
     'update-whisper-user',
-    'clear-whisper-user'
+    'clear-whisper-user',
+    'select-file',
+    'remove-file'
 ]);
 
 </script>

@@ -9,13 +9,15 @@ namespace ChatTalk.WebServer.Network.Service
         private readonly MessageService _messageService;
         private readonly WhisperService _whisperService;
         private readonly SystemService _systemService;
+        private readonly FileService _fileService;
 
         public MessageDispatcherService(
             ILogger<MessageDispatcherService> logger,
             SessionService sessionService,
             MessageService messageService,
             WhisperService whisperService,
-            SystemService systemService
+            SystemService systemService,
+            FileService fileService
         )
             
         {
@@ -24,6 +26,7 @@ namespace ChatTalk.WebServer.Network.Service
             _messageService  = messageService;
             _whisperService  = whisperService;
             _systemService   = systemService;
+            _fileService     = fileService;
         }
 
         public async Task DispatcherAsync(WebSocketHandler handler, BaseMessage baseMessage)
@@ -49,6 +52,11 @@ namespace ChatTalk.WebServer.Network.Service
             {
                 await _whisperService.SendAsyc(handler, baseMessage);
             }
+
+            if (baseMessage is FileMessage fileMessage)
+            {
+                await _fileService.SendAsync(handler, fileMessage);
+            } 
 
             if (baseMessage is ChatMessage chatMessage)
             {

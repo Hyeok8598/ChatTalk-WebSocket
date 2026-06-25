@@ -21,6 +21,8 @@ builder.Services.AddScoped<UsersRepository>();
 builder.Services.AddScoped<UsersService>();
 builder.Services.AddScoped<ChatMessageRepository>();
 builder.Services.AddScoped<ChatMessageService>();
+builder.Services.AddScoped<AttachFileRepository>();
+builder.Services.AddScoped<AttachFileService>();
 
 builder.Services.AddSingleton<ClientManager>();
 builder.Services.AddScoped<WebSocketServer>();
@@ -33,6 +35,7 @@ builder.Services.AddScoped<WebSocketReceiveService>();
 builder.Services.AddScoped<WebSocketSendService>();
 builder.Services.AddScoped<WhisperService>();
 builder.Services.AddScoped<SystemService>();
+builder.Services.AddScoped<FileService>();
 
 var app = builder.Build();
 

@@ -23,6 +23,7 @@ namespace ChatTalk.Common.Protocol.Serialization
                 MessageType.UserList => JsonSerializer.Deserialize<UserListMessage>(json, Options),
                 MessageType.Join => JsonSerializer.Deserialize<JoinMessage>(json, Options),
                 MessageType.Leave => JsonSerializer.Deserialize<LeaveMessage>(json, Options),
+                MessageType.File => JsonSerializer.Deserialize<FileMessage>(json, Options),
                 MessageType.System => JsonSerializer.Deserialize<SystemMessage>(json, Options),
 
                 _ => null

@@ -93,8 +93,8 @@
 
 <script setup>
 import { ref } from "vue"
-import { post, setUserInfo } from "../../util/common.js"
 import { useRouter } from "vue-router";
+import { post, setUserInfo } from "../../common/util/commonUtil.js";
 
 const userId = ref("");
 const password = ref("");

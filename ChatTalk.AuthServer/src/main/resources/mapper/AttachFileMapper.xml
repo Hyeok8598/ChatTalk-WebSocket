@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTO Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.chattalk.auth.mapper.AttachFileMapper">
+    <insert id="insertAttachFile001">
+        INSERT INTO ATTACH_FILE (
+            REF_TYPE,
+            REF_ID,
+            ORIGINAL_NAME,
+            STORED_NAME,
+            FILE_PATH,
+            FILE_SIZE,
+            CONTENT_TYPE,
+            REMARK,
+            CREATED_BY,
+            CREATED_AT
+        )
+        VALUES (
+            #{refType},
+            #{refId},
+            #{originalName},
+            #{storedName},
+            #{filePath},
+            #{fileSize},
+            #{contentType},
+            #{remark},
+            #{createBy},
+            CURRENT_TIMESTAMP
+        )
+    </insert>
+
+    <select id="selectOneAttachFile001">
+        SELECT FILE_ID       AS "fileId"
+             , REF_TYPE      AS "refType"
+             , REF_ID        AS "refId"
+             , ORIGINAL_NAME AS "originalName"
+             , STORED_NAME   AS "storedName"
+             , FILE_PATH     AS "filePath"
+             , FILE_SIZE     AS "fileSize"
+             , CONTENT_TYPE  AS "contentType"
+             , REMARK        AS "remark"
+             , CREATED_BY    AS "createdBy"
+             , CREATED_AT    AS "createAt"
+          FROM ATTACH_FILE
+         WHERE 1=1
+           AND REF_TYPE = #{refType}
+           AND REF_ID = #{refId}
+    </select>
+</mapper>
