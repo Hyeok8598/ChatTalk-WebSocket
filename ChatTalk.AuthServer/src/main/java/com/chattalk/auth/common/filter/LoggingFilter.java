@@ -7,7 +7,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import org.springframework.web.util.ContentCachingRequestWrapper;
 import org.springframework.web.util.ContentCachingResponseWrapper;
 
 import java.io.IOException;
@@ -18,9 +17,25 @@ import java.nio.charset.StandardCharsets;
 public class LoggingFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        String contentType = request.getContentType();
+
+        boolean isMultipart =
+                contentType != null &&
+                contentType.toLowerCase().startsWith("multipart/");
+
+        if (isMultipart) {
+            log.info("[Request] {} {} multipart",
+                    request.getMethod(),
+                    request.getRequestURL());
+
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         CachedBodyRequestWrapper requestWrapper = new CachedBodyRequestWrapper(request);
         String requestBody = requestWrapper.getBody();
         ContentCachingResponseWrapper responseWrapper = new ContentCachingResponseWrapper(response);
+
 
         log.info("""
                     \n

@@ -60,9 +60,7 @@ public class FileApiService {
             throw new IllegalArgumentException("파일이 존재하지 않습니다.");
         }
 
-        log.info("### LOG : {}", file);
         String filePath = file.getParam("filePath");
-        log.info("### LOG : {}", filePath);
         String storedFileName = file.getParam("storedName");
 
         Path path = Paths.get(filePath).resolve(storedFileName);
