@@ -27,7 +27,10 @@ public final class FileUtil {
         try {
             Path uploadPath = Paths.get(FileConst.UPLOAD_PATH, directory);
             Path savePath   = uploadPath.resolve(fileName);
-            if(!mkdirs(uploadPath)) return;
+            if(!mkdirs(uploadPath)) {
+                log.error("파일 기본 경로 저장 중 오류");
+                return;
+            }
             file.transferTo(savePath.toFile());
         } catch (IOException e) {
             throw new RuntimeException("파일 저장 중 오류가 발생했습니다.", e);

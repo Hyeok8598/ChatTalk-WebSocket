@@ -28,6 +28,7 @@ public class AttachFileController {
     @PostMapping("/upload")
     public int upload(@RequestParam("file") MultipartFile file,
                       @RequestParam("requests") String requests) {
+        log.info("file={} \n fileSize={} \n request={}\n", file, file.getSize(), requests);
         DataMap dataMap = JsonUtil.toDataMap(requests);
         return fileApiService.upload(file, dataMap);
     }

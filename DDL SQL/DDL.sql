@@ -10,4 +10,14 @@ CREATE TABLE chat_message (
 	create_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+-- USERS
+CREATE TABLE public.users
+(
+    id          BIGSERIAL PRIMARY KEY,
+    create_at   TIMESTAMP NOT NULL DEFAULT now(),
+    password    VARCHAR(255) NOT NULL,
+    user_id     VARCHAR(255) NOT NULL UNIQUE,
+    user_name   VARCHAR(255) NOT NULL
+);
+
 commit;
