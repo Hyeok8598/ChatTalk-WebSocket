@@ -1,5 +1,5 @@
 import { ref } from "vue";
-import { SERVER } from "../util/common";
+import { SERVER } from "../common/util/commonUtil";
 
 export function userChatSocket() {
     const status = ref('연결중...');

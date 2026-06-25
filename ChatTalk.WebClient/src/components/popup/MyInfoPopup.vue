@@ -97,8 +97,8 @@
 </template>
 
 <script setup>
-import { getUserInfo, post, setUserInfo } from '../../util/common';
 import { ref } from "vue";
+import { getUserInfo, post, setUserInfo } from "../../common/util/commonUtil";
 
 const userInfo = getUserInfo();
 const userName = ref(userInfo.userName);

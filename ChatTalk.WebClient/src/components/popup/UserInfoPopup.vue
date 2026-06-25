@@ -89,8 +89,8 @@
 </template>
 
 <script setup>
-import { post } from '../../util/common';
 import { onMounted, ref } from "vue";
+import { post } from "../../common/util/commonUtil";
 
 const emit = defineEmits([
     'closeUserInfo'

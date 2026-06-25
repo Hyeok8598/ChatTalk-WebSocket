@@ -1,5 +1,6 @@
 import { ref } from "vue";
-import { MESSAGE_DIRECTION } from "../util/common";
+import { uploadFile } from "../common/api/fileApi.js";
+import { MESSAGE_DIRECTION } from "../common/util/commonUtil";
 
 export function userChatMessage({ userInfo, send }) {
     const msgs = ref([]);
@@ -8,14 +9,14 @@ export function userChatMessage({ userInfo, send }) {
     function receiveMessage(data) {
         console.info("서버 메시지:", data);
 
-        if(data.type === "MSG") {
+        if(data.type === "MSG" || data.type === "FILE") {
             if(messageIds.has(data.messageId)) return;
             addMessage(data, MESSAGE_DIRECTION.RECEIVE);
             return;
         }
         
         if(data.type === "WHISPER") {
-            if(messageIds.has(data.messageId)) return;
+            if(messageIds.has(data.messawgeId)) return;
             addMessage(data, MESSAGE_DIRECTION.RECEIVE, true);
             return;
         }
@@ -62,10 +63,8 @@ export function userChatMessage({ userInfo, send }) {
             targetUserName : targetUser.userName,
             content        : message
         };
-
         messageIds.add(messageId);
         addMessage(data, MESSAGE_DIRECTION.SENT, true);
-
         send(data);
     };
 
@@ -78,20 +77,38 @@ export function userChatMessage({ userInfo, send }) {
             senderUserId   : userInfo.userId
         };
         messageIds.add(messageId);
-        
+        send(data);
+    };
+
+    async function sendFileMessage(file, refType) {
+        const fileId = crypto.randomUUID();
+        const messageId = crypto.randomUUID();
+
+        const fileApiRequest = {
+            refType : refType,
+            refId   : fileId
+        };
+        const fileApiResonse = await uploadFile(file, fileApiRequest);
+
+        const data = {
+            type         : "FILE",
+            messageId,
+            senderUserId : userInfo.userId,
+            refType      : fileApiRequest.refType,
+            refId        : fileApiRequest.refId,
+            originalName : file.name
+        };
+
+        messageIds.add(messageId);
+        addMessage(data, MESSAGE_DIRECTION.SENT);
         send(data);
     };
 
     function addMessage(data, messageDirection, isWhisper=false) {
         msgs.value.push({
-            messageId      : data.messageId,
-            senderUserId   : data.senderUserId,
-            senderUserName : data.senderUserName,
-            targetUserId   : data.targetUserId,
-            targetUserName : data.targetUserName,
-            direction      : messageDirection,
-            content        : data.content,
-            isWhisper
+            ...data,
+            direction : messageDirection,
+            isWhisper : isWhisper
         });
     };
 
@@ -100,6 +117,7 @@ export function userChatMessage({ userInfo, send }) {
         receiveMessage,
         sendMessage,
         sendWhisperMessage,
-        sendLeaveMessage
+        sendLeaveMessage,
+        sendFileMessage
     }
 };
